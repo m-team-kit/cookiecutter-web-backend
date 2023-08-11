@@ -1,3 +1,12 @@
 # Get rid of .venv when copying
 */.venv
 */*/.venv
+
+# No need to copy dockerfiles
+.dockerignore
+backend.dockerfile
+celeryworker.dockerfile
+
+# No need to copy git history
+.git
+.gitignore
