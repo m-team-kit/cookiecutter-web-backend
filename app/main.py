@@ -26,6 +26,13 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 
+# Add favicon endpoint
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """Favicon endpoint."""
+    return FileResponse(settings.FAVICON_PATH, media_type="image/icon")
+
+
 # Set "latest" api as mounted app
 api_latests = FastAPI()
 app.mount("/latest", api_latests)
