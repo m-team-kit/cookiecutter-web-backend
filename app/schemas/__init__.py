@@ -1,14 +1,19 @@
-from .base_schema import BaseSchema, MetadataBaseSchema, MetadataBaseCreate, MetadataBaseUpdate, MetadataBaseInDBBase
+from uuid import UUID
+
+from pydantic import BaseModel
+
+from .item import Item, ItemCreate, ItemInDB, ItemUpdate
 from .msg import Msg
-from .token import (
-    RefreshTokenCreate,
-    RefreshTokenUpdate,
-    RefreshToken,
-    Token,
-    TokenPayload,
-    MagicTokenPayload,
-    WebToken,
-)
-from .user import User, UserCreate, UserInDB, UserUpdate, UserLogin
-from .emails import EmailContent, EmailValidation
-from .totp import NewTOTP, EnableTOTP
+from .template import Template, TemplateCreate, TemplateInDB, TemplateUpdate
+from .token import Token, TokenPayload
+from .user import User, UserCreate, UserInDB, UserUpdate
+
+
+class Option(BaseModel):
+    option: str
+    description: str
+
+
+class Project(BaseModel):
+    code: UUID
+    link: str
