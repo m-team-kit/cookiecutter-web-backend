@@ -12,7 +12,7 @@ python-multipart = "~0.0.6"
 email-validator = "^2.0.0.post2"
 requests = "~2.31.0"
 celery = "~5.3.1"
-passlib = {version = "~1.7.4", extras = ["bycrypt"]}
+passlib = { version = "~1.7.4", extras = ["bycrypt"] }
 tenacity = "~8.2.2"
 pydantic = "~2.1.1"
 emails = "~0.6"
@@ -21,7 +21,7 @@ gunicorn = "~21.2.0"
 psycopg2-binary = "~2.9.7"
 alembic = "~1.11.2"
 sqlalchemy = "~2.0.19"
-python-jose = {version = "~3.3.0", extras = ["cryptography"]}
+python-jose = { version = "~3.3.0", extras = ["cryptography"] }
 setuptools = "~68.0.0"
 pydantic-settings = "~2.0.2"
 
@@ -49,3 +49,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 120
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "--import-mode=importlib"
