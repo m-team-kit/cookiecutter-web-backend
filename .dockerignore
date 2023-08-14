@@ -4,6 +4,8 @@
 
 # No need to copy dockerfiles
 .dockerignore
+docker-compose.yml
+docker-compose.*.yml
 backend.dockerfile
 celeryworker.dockerfile
 
