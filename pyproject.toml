@@ -36,6 +36,10 @@ autoflake = "~2.2.0"
 flake8 = "~6.1.0"
 sqlalchemy-stubs = "~0.4"
 
+[tool.pylint]
+max-line-length=120
+ignored-modules = ["alembic"]
+
 [tool.isort]
 multi_line_output = 3
 include_trailing_comma = true
