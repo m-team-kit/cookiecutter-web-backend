@@ -16,6 +16,28 @@
             "envFile": "${workspaceFolder}/.env",
             "jinja": false,
             "justMyCode": true
+        },
+        {
+            "name": "Python: Alembic revision",
+            "type": "python",
+            "request": "launch",
+            "module": "alembic",
+            "args": [
+                "revision",
+                "--autogenerate",
+                "-m",
+                "\"${input:revisionMessage}\""
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "justMyCode": true,
+        },
+    ],
+    "inputs": [
+        {
+            "id": "revisionMessage",
+            "type": "promptString",
+            "description": "Revision message",
+            "default": "standard"
         }
     ]
 }
