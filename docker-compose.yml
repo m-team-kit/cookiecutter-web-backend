@@ -30,6 +30,8 @@ services:
       - database
     env_file:
       - .env
+    ports:
+      - 5050:5050
 
 volumes:
   app-db-data:
