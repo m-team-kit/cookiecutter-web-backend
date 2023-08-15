@@ -27,7 +27,7 @@ class UserInDBBase(UserBase):
     id: Optional[UUID] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # Additional properties to return via API
