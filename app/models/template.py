@@ -1,7 +1,10 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
 
@@ -10,8 +13,10 @@ if TYPE_CHECKING:
 
 
 class Template(Base):
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(String, index=True)
-    owner_id = Column(Integer, ForeignKey("user.id"))
-    owner = relationship("User", back_populates="templates")
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
+    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    modified: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now(), nullable=False)
+    title: Mapped[str] = mapped_column(index=True)
+    description: Mapped[str] = mapped_column(index=True)
+    owner_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
+    owner: Mapped["User"] = relationship(back_populates="templates")
