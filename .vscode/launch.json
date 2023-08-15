@@ -31,6 +31,18 @@
             "envFile": "${workspaceFolder}/.env",
             "justMyCode": true,
         },
+        {
+            "name": "Python: Alembic upgrade",
+            "type": "python",
+            "request": "launch",
+            "module": "alembic",
+            "args": [
+                "upgrade",
+                "head"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "justMyCode": true
+        },
     ],
     "inputs": [
         {
