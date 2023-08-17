@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app import models
-from app.api import deps
+from app.core import authentication as auth
 
 router = APIRouter()
 
@@ -13,7 +13,7 @@ router = APIRouter()
     operation_id="createDB",
 )
 def create_database(
-    current_user: models.User = Depends(deps.get_user),
+    current_user: models.User = Depends(auth.get_user),
 ) -> None:
     """
     Use this method to create local copy of the database from YAML files in
@@ -29,7 +29,7 @@ def create_database(
     operation_id="updateDB",
 )
 def update_database(
-    current_user: models.User = Depends(deps.get_user),
+    current_user: models.User = Depends(auth.get_user),
 ) -> None:
     """
     Use this method to update local copy of the database from YAML files in

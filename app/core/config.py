@@ -33,7 +33,9 @@ class Settings(BaseSettings):
 
     @validator("SENTRY_DSN", pre=True)
     @classmethod
-    def sentry_dsn_can_be_blank(cls, v: str) -> Optional[str]:
+    def sentry_dsn_can_be_blank(
+        cls, v: str
+    ) -> Optional[str]:
         if v is None or len(v) == 0:
             return None
         return v
@@ -51,13 +53,11 @@ class Settings(BaseSettings):
     ) -> Any:
         if isinstance(v, str):
             return v
-        return PostgresDsn.build(
-            scheme="postgresql",
-            username=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            path=values.get("POSTGRES_DB") or "",
-        )
+        username = values.get("POSTGRES_USER")
+        password = values.get("POSTGRES_PASSWORD")
+        host = values.get("POSTGRES_SERVER")
+        path = values.get("POSTGRES_DB")
+        return f"postgresql://{username}:{password}@{host}/{path}"
 
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = None
@@ -77,7 +77,7 @@ class Settings(BaseSettings):
         return v
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-    EMAIL_TEMPLATES_DIR: str = "/app/app/email-templates/build"
+    EMAIL_TEMPLATES_DIR: str = "/app/email-templates/build"
     EMAILS_ENABLED: bool = False
 
     @validator("EMAILS_ENABLED", pre=True)
@@ -85,11 +85,7 @@ class Settings(BaseSettings):
     def get_emails_enabled(
         cls, v: bool, values: Dict[str, Any]
     ) -> bool:
-        return bool(
-            values.get("SMTP_HOST")
-            and values.get("SMTP_PORT")
-            and values.get("EMAILS_FROM_EMAIL")
-        )
+        return bool(values.get("SMTP_HOST") and values.get("SMTP_PORT") and values.get("EMAILS_FROM_EMAIL"))
 
     TRUSTED_OP_LIST: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore

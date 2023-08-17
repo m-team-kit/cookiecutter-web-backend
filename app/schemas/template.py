@@ -1,12 +1,20 @@
-from typing import Optional
+from typing import Optional, List
+from uuid import UUID
 
 from pydantic import BaseModel
 
 
 # Shared properties
 class TemplateBase(BaseModel):
+    repoFile: Optional[str] = None
     title: Optional[str] = None
-    description: Optional[str] = None
+    summary: Optional[str] = None
+    language: Optional[str] = None
+    tags: List[str] = []
+    picture: Optional[str] = None
+    gitLink: Optional[str] = None
+    gitCheckout: Optional[str] = None
+    score: Optional[float] = None
 
 
 # Properties to receive on item creation
@@ -21,9 +29,16 @@ class TemplateUpdate(TemplateBase):
 
 # Properties shared by models stored in DB
 class TemplateInDBBase(TemplateBase):
-    id: int
+    id: UUID
+    repoFile: str
     title: str
-    owner_id: int
+    summary: str
+    language: str
+    tags: List[str]
+    picture: str
+    gitLink: str
+    gitCheckout: str
+    score: float | None
 
     class Config:
         from_attributes = True
