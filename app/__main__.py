@@ -34,12 +34,12 @@ def favicon():
 
 
 # Set "latest" api as mounted app
-api_latests = FastAPI()
+api_latests = FastAPI(description=api.v1.__doc__)
 app.mount("/api/latest", api_latests)
 api_latests.include_router(api.v1.api_router)
 
 
 # Set "v1" api as mounted app
-api_v1 = FastAPI()
+api_v1 = FastAPI(description=api.v1.__doc__)
 app.mount("/api/v1", api_v1)
 api_v1.include_router(api.v1.api_router)
