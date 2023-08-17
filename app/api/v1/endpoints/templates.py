@@ -1,7 +1,6 @@
 from typing import Any, List
 from uuid import UUID
 
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -18,35 +17,14 @@ router = APIRouter()
     operation_id="listTemplates",
 )
 def read_templates(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
+    database: Session = Depends(deps.get_db),
 ) -> Any:
     """
     Use this method to get a list of available templates. The response
     returns a pagination object with the templates.
     """
-    templates = crud.template.get_multi(db=db, skip=skip, limit=limit)
+    templates = crud.template.get_multi(db=database)
     return templates
-
-
-@router.get(
-    path=":search",
-    response_model=List[schemas.Template],
-    summary="(Public) Finds templates matching search query.",
-    operation_id="searchTemplates",
-)
-def search_templates(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
-) -> Any:
-    """
-    Use this method to list templates matching the search query, i.e.
-    list of keywords to be looked for in the title and summary fields of
-    the template's metadata.
-    """
-    raise NotImplementedError
 
 
 @router.get(
@@ -57,13 +35,13 @@ def search_templates(
 )
 def read_template(
     *,
-    db: Session = Depends(deps.get_db),
+    database: Session = Depends(deps.get_db),
     uuid: UUID,
 ) -> Any:
     """
     Use this method to retrieve details about the specific template.
     """
-    template = crud.template.get(db=db, id=uuid)
+    template = crud.template.get(db=database, id=uuid)
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     return template
@@ -77,18 +55,18 @@ def read_template(
 )
 def update_template(
     *,
-    db: Session = Depends(deps.get_db),
+    database: Session = Depends(deps.get_db),
     uuid: UUID,
     template_in: schemas.TemplateUpdate,
-    current_user: models.User = Depends(deps.get_current_active_user),
+    current_user: models.User = Depends(deps.get_user),
 ) -> Any:
     """
     Use this method to update the score/rating of the specific template.
     """
-    template = crud.template.get(db=db, id=uuid)
+    template = crud.template.get(db=database, id=uuid)
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     if not crud.user.is_superuser(current_user) and (template.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    template = crud.template.update(db=db, db_obj=template, obj_in=template_in)
+    template = crud.template.update(db=database, db_obj=template, obj_in=template_in)
     return template
