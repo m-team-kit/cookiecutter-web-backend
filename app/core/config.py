@@ -1,12 +1,11 @@
 import secrets
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from pydantic import AnyHttpUrl, EmailStr, HttpUrl, PostgresDsn, validator
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     FAVICON_PATH: str = "favicon.ico"
     # 60 minutes * 24 hours * 8 days = 8 days
@@ -25,7 +24,7 @@ class Settings(BaseSettings):
     ) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+        if isinstance(v, (list, str)):
             return v
         raise ValueError(v)
 
@@ -57,7 +56,7 @@ class Settings(BaseSettings):
             username=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
-            path=values.get('POSTGRES_DB') or '',
+            path=values.get("POSTGRES_DB") or "",
         )
 
     SMTP_TLS: bool = True
@@ -70,7 +69,9 @@ class Settings(BaseSettings):
 
     @validator("EMAILS_FROM_NAME")
     @classmethod
-    def get_project_name(cls, v: Optional[str], values: Dict[str, Any]) -> str:
+    def get_project_name(
+        cls, v: Optional[str], values: Dict[str, Any]
+    ) -> str:
         if not v:
             return values["PROJECT_NAME"]
         return v
@@ -81,13 +82,16 @@ class Settings(BaseSettings):
 
     @validator("EMAILS_ENABLED", pre=True)
     @classmethod
-    def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:
+    def get_emails_enabled(
+        cls, v: bool, values: Dict[str, Any]
+    ) -> bool:
         return bool(
             values.get("SMTP_HOST")
             and values.get("SMTP_PORT")
             and values.get("EMAILS_FROM_EMAIL")
         )
 
+    TRUSTED_OP_LIST: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str

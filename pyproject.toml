@@ -23,6 +23,7 @@ sqlalchemy = "~2.0.19"
 python-jose = { version = "~3.3.0", extras = ["cryptography"] }
 setuptools = "~68.0.0"
 pydantic-settings = "~2.0.2"
+flaat = "^1.1.14"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "~7.4.0"
