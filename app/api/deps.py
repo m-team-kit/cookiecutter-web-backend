@@ -18,7 +18,7 @@ async def get_db() -> Generator:
         db.close()
 
 
-def get_user(
+async def get_user(
     db: Session = Depends(get_db),
     token: str = Depends(bearer_token),
 ) -> str:  # models.User:
