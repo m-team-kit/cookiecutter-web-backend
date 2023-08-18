@@ -27,6 +27,7 @@ flaat = "^1.1.14"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "~7.4.0"
+pytest-postgresql = "~5.0.0"
 pytest-xdist = "~3.3.1"
 pytest-cov = "~4.1.0"
 bandit = "~1.7.5"
@@ -36,6 +37,7 @@ isort = "~5.12.0"
 autoflake = "~2.2.0"
 flake8 = "~6.1.0"
 sqlalchemy-stubs = "~0.4"
+httpx = "~0.24.1"
 
 [tool.pylint]
 max-line-length=120

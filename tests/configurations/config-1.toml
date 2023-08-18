@@ -1,0 +1,14 @@
+[ENVIRONMENT]
+PROJECT_NAME = "test-fastapi"
+BACKEND_CORS_ORIGINS = '["http://localhost"]'
+SMTP_TLS = "true"
+SMTP_PORT = "587"
+EMAILS_FROM_EMAIL = "info@templates.cloud.ai4eosc.eu"
+USERS_OPEN_REGISTRATION = "false"
+TRUSTED_OP_LIST = '["https://aai-dev.egi.eu/auth/realms/egi"]'
+
+[DATABASE]
+dbname = "test_database"
+password = "test_password"
+version = 12.15
+connection_timeout = 60

@@ -1,4 +1,3 @@
-import secrets
 from typing import Any, Dict, List, Optional, Set, Union
 
 from pydantic import AnyHttpUrl, EmailStr, HttpUrl, PostgresDsn, validator
@@ -6,12 +5,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = secrets.token_urlsafe(32)
     FAVICON_PATH: str = "favicon.ico"
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    SERVER_NAME: str
-    SERVER_HOST: AnyHttpUrl
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
@@ -44,6 +40,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
+    POSTGRES_PORT: str
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
@@ -56,8 +53,9 @@ class Settings(BaseSettings):
         username = values.get("POSTGRES_USER")
         password = values.get("POSTGRES_PASSWORD")
         host = values.get("POSTGRES_SERVER")
+        port = values.get("POSTGRES_PORT")
         path = values.get("POSTGRES_DB")
-        return f"postgresql://{username}:{password}@{host}/{path}"
+        return f"postgresql://{username}:{password}@{host}:{port}/{path}"
 
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = None
@@ -89,8 +87,6 @@ class Settings(BaseSettings):
 
     TRUSTED_OP_LIST: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
-    FIRST_SUPERUSER: EmailStr
-    FIRST_SUPERUSER_PASSWORD: str
     USERS_OPEN_REGISTRATION: bool = False
 
     class Config:
