@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
 from app import models
 from app.core import authentication as auth
@@ -9,6 +9,7 @@ router = APIRouter()
 @router.post(
     path=":create",
     status_code=204,
+    responses={status.HTTP_500_INTERNAL_SERVER_ERROR: {}},
     summary="(Admin) Creates local database.",
     operation_id="createDB",
 )
@@ -25,6 +26,7 @@ def create_database(
 @router.post(
     path=":update",
     status_code=204,
+    responses={status.HTTP_500_INTERNAL_SERVER_ERROR: {}},
     summary="(Admin) Updates local database.",
     operation_id="updateDB",
 )
