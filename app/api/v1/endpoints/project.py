@@ -1,7 +1,8 @@
-from typing import Any, List
+from typing import Any, Dict, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status, Body
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app import crud, db, models, schemas
@@ -12,7 +13,8 @@ router = APIRouter()
 
 @router.get(
     path="/{uuid}",
-    response_model=List[schemas.Option],
+    status_code=status.HTTP_200_OK,
+    response_model=Dict[str, Any],
     summary="(Public) Fetches fields of the cookiecutter template.",
     operation_id="fetchFields",
 )
@@ -20,18 +22,20 @@ def options_project(
     *,
     session: Session = Depends(db.get_session),
     uuid: UUID,
-) -> Any:
+) -> Dict[str, Any]:
     """
     Use this method to fetch fields of the cookiecutter template to build the
     web form.
     """
-    template = crud.template.get(db=session, id=uuid)
+    template = crud.template.get(session, id=uuid)
     return template.options
 
 
 @router.post(
     path="/{uuid}:generate",
-    response_model=schemas.Project,
+    status_code=status.HTTP_200_OK,
+    responses={200: {"content": {"application/zip": {}}}},
+    response_class=FileResponse,
     summary="(User) Generate software project from the template.",
     operation_id="createProject",
 )
@@ -39,12 +43,13 @@ def generate_project(
     *,
     session: Session = Depends(db.get_session),
     uuid: UUID,
-    options_in: List[schemas.Option],
+    options_in: Dict[str, str] = Body(),
     current_user: models.User = Depends(auth.get_user),
-) -> Any:
+) -> FileResponse:
     """
     Use this method to generate software project using the specific template.
     Generated project is returned as `.zip` file.
     """
-    template = crud.template.get(db=session, id=uuid)
-    return template.project(owner_id=current_user.id, options=options_in)
+    # template = crud.template.get(db=session, id=uuid)
+    # return template.project(owner_id=current_user.id, options=options_in)
+    return FileResponse("favicon.ico", media_type="image/vnd.microsoft.icon")
