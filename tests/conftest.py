@@ -13,13 +13,13 @@ from pytest_postgresql.janitor import DatabaseJanitor
 
 @pytest.fixture(scope="session", params=["config-1"])
 def configuration_path(request):
-    """Fixture to provide each cookiecutter configuration path."""
+    """Fixture to provide each testing configuration path."""
     return f"tests/configurations/{request.param}.toml"
 
 
 @pytest.fixture(scope="session", name="config")
 def configuration(configuration_path):
-    """Fixture to provide each cookiecutter configuration args."""
+    """Fixture to provide each testing configuration dict."""
     with open(configuration_path, mode="rb") as file:
         return tomllib.load(file)
 
@@ -34,7 +34,6 @@ def environment(config, postgresql_proc):
     os.environ["POSTGRES_DB"] = config["DATABASE"]["dbname"]
     for key, value in config["ENVIRONMENT"].items():
         os.environ[key] = value
-
 
 
 @pytest.fixture(scope="session", autouse=True)
