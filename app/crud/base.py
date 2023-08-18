@@ -23,7 +23,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    def get(self, session: Session, id: Any) -> Optional[ModelType]:
+    def get(self, session: Session, *, id: Any) -> Optional[ModelType]:
         return session.query(self.model).filter(self.model.id == id).first()
 
     def get_multi(

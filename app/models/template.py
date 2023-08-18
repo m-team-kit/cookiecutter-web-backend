@@ -40,4 +40,5 @@ class Score(Base):
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("template.id"))
     value: Mapped[float] = mapped_column()
-    owner_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"), unique=True)
+    owner_subject: Mapped[UUID] = mapped_column(ForeignKey("user.subject"), unique=True)
+    owner_issuer: Mapped[UUID] = mapped_column(ForeignKey("user.issuer"), unique=True)
