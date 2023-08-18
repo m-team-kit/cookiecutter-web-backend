@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy import DateTime, ForeignKey, ForeignKeyConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -40,5 +40,6 @@ class Score(Base):
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("template.id"))
     value: Mapped[float] = mapped_column()
-    owner_subject: Mapped[UUID] = mapped_column(ForeignKey("user.subject"), unique=True)
-    owner_issuer: Mapped[UUID] = mapped_column(ForeignKey("user.issuer"), unique=True)
+    owner_subject: Mapped[str] = mapped_column()
+    owner_issuer: Mapped[str] = mapped_column()
+    ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"])
