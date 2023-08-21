@@ -8,7 +8,7 @@ import emails
 from emails.template import JinjaTemplate
 from jose import jwt
 
-from app.core.config import settings
+from app.config import settings
 
 
 def send_email(
@@ -17,7 +17,7 @@ def send_email(
     html_template: str = "",
     environment: Dict[str, Any] = {},
 ) -> None:
-    assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
+    assert settings.email_enabled, "no provided configuration for email variables"
     message = emails.Message(
         subject=JinjaTemplate(subject_template),
         html=JinjaTemplate(html_template),

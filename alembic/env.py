@@ -4,10 +4,12 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app.config import Settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+settings = Settings()
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -19,7 +21,7 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
-from app.db.base import Base, Token  # noqa
+from app.core.database import Base, Token  # noqa
 
 target_metadata = [Base.metadata, Token.metadata]
 
@@ -30,11 +32,7 @@ target_metadata = [Base.metadata, Token.metadata]
 
 
 def get_url():
-    server = os.getenv("POSTGRES_SERVER")
-    user = os.getenv("POSTGRES_USER")
-    password = os.getenv("POSTGRES_PASSWORD")
-    db = os.getenv("POSTGRES_DB")
-    return f"postgresql://{user}:{password}@{server}/{db}"
+    return f"{settings.postgres_uri}"
 
 
 def run_migrations_offline():

@@ -1,9 +1,18 @@
+# pylint: disable=unused-argument
+# pylint: disable=redefined-outer-name
 import pytest
 from fastapi.testclient import TestClient
 
+from app import create_app
+
 
 @pytest.fixture(scope="module")
-def client(environment):
-    """Import application interface for the tests."""
-    from app.__main__ import api_v1  # fmt: skip
-    return TestClient(api_v1)
+def app(environment):
+    """Generate application from factories model."""
+    return create_app()
+
+
+@pytest.fixture(scope="module")
+def client(app):
+    """Produce test client from application instance."""
+    return TestClient(app)

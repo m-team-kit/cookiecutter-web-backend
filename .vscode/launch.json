@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "app.__main__:app",
+                "autoapp:app",
                 "--reload"
             ],
             "envFile": "${workspaceFolder}/.env",

@@ -1,5 +1,0 @@
-# Import all the models, so that Base has them before being
-# imported by Alembic
-from app.db.base_class import Base, Token  # noqa
-from app.models.template import Template  # noqa
-from app.models.user import User  # noqa

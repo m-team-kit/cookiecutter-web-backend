@@ -5,7 +5,7 @@ from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.db.base_class import Token
+from app.core.database import Token
 
 if TYPE_CHECKING:
     from .template import Score  # noqa: F401

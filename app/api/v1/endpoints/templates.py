@@ -4,8 +4,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Body, status
 from sqlalchemy.orm import Session
 
-from app import crud, db, models, schemas
+from app import crud, models, schemas
 from app.core import authentication as auth
+from app.api import dependencies as deps
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ router = APIRouter()
 )
 def read_templates(
     *,
-    session: Session = Depends(db.get_session),
+    session: Session = Depends(deps.get_session),
 ) -> List[models.Template]:
     """
     Use this method to get a list of available templates. The response
@@ -42,7 +43,7 @@ def read_templates(
 )
 def read_template(
     *,
-    session: Session = Depends(db.get_session),
+    session: Session = Depends(deps.get_session),
     uuid: UUID,
 ) -> models.Template:
     """
@@ -64,10 +65,10 @@ def read_template(
 )
 def rate_template(
     *,
-    session: Session = Depends(db.get_session),
+    session: Session = Depends(deps.get_session),
     uuid: UUID,
     score: float = Body(),
-    current_user: models.User = Depends(auth.get_user),
+    current_user: models.User = Depends(deps.get_user),
 ) -> models.Template:
     """
     Use this method to update the score/rating of the specific template.

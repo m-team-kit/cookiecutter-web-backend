@@ -1,12 +1,12 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status, Body
+from fastapi import APIRouter, Body, Depends, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from app import crud, db, models, schemas
-from app.core import authentication as auth
+from app import crud, models
+from app.api import dependencies as deps
 
 router = APIRouter()
 
@@ -20,7 +20,7 @@ router = APIRouter()
 )
 def options_project(
     *,
-    session: Session = Depends(db.get_session),
+    session: Session = Depends(deps.get_session),
     uuid: UUID,
 ) -> Dict[str, Any]:
     """
@@ -41,10 +41,10 @@ def options_project(
 )
 def generate_project(
     *,
-    session: Session = Depends(db.get_session),
+    session: Session = Depends(deps.get_session),
     uuid: UUID,
     options_in: Dict[str, str] = Body(),
-    current_user: models.User = Depends(auth.get_user),
+    current_user: models.User = Depends(deps.get_user),
 ) -> FileResponse:
     """
     Use this method to generate software project using the specific template.
