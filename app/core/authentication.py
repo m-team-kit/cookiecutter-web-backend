@@ -4,7 +4,9 @@ from flaat.fastapi import Flaat
 from app.config import Settings
 
 
-def init_app(app: FastAPI, settings: Settings) -> None:
+def init_app(app: FastAPI) -> None:
     """Initialize security configuration."""
+    settings: Settings = app.state.settings
     app.state.flaat = Flaat()
-    app.state.flaat.set_trusted_OP_list([str(x) for x in settings.trusted_op])
+    op_list = [str(x) for x in settings.trusted_op]
+    app.state.flaat.set_trusted_OP_list(op_list)

@@ -7,8 +7,9 @@ from sqlalchemy.orm import DeclarativeBase, declared_attr, sessionmaker
 from app.config import Settings
 
 
-def init_app(app: FastAPI, settings: Settings) -> None:
+def init_app(app: FastAPI) -> None:
     """Initialize database configuration."""  # Disconnect Handling - Pessimistic
+    settings: Settings = app.state.settings
     engine = create_engine(f"{settings.postgres_uri}", pool_pre_ping=True)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     app.state.SessionLocal = SessionLocal
