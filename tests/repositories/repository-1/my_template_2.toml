@@ -1,0 +1,8 @@
+[information]
+display_name = "Template 2"
+description = "This is a test for template 2"
+
+[template]
+url = "https://github.com/someone/template_2"
+checkout = "main"
+password = ""
