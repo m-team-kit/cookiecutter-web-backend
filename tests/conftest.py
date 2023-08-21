@@ -6,9 +6,12 @@ import os
 import tomllib
 
 import pytest
+from fastapi.testclient import TestClient
 from flaat.user_infos import UserInfos
 from pytest_postgresql import factories
 from pytest_postgresql.janitor import DatabaseJanitor
+
+from app import create_app
 
 
 @pytest.fixture(scope="session", params=["config-1"])
@@ -44,3 +47,15 @@ def sql_database(config, postgresql_proc):
     config["DATABASE"]["user"] = postgresql_proc.user
     with DatabaseJanitor(**config["DATABASE"]) as database:
         yield database
+
+
+@pytest.fixture(scope="module")
+def app(environment):
+    """Generate application from factories model."""
+    return create_app()
+
+
+@pytest.fixture(scope="module")
+def client(app):
+    """Produce test client from application instance."""
+    return TestClient(app)
