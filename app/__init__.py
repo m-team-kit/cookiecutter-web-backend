@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 import app.core.authentication as auth
+import app.core.database as db
 from app import api
 from app.config import Settings
 
@@ -31,6 +32,7 @@ def create_app(**custom_parameters) -> FastAPI:
 
     # Set security configuration
     auth.init_app(app, settings)
+    db.init_app(app, settings)
 
     # Set "latest" api as mounted app
     api_latests = FastAPI(description=api.v1.__doc__)
