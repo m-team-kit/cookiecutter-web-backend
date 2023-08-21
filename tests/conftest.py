@@ -49,13 +49,25 @@ def sql_database(config, postgresql_proc):
         yield database
 
 
+@pytest.fixture(scope="module", name="custom")
+def custom_settings(request):
+    """Fixture to provide each testing custom configuration values."""
+    return request.param
+
+
 @pytest.fixture(scope="module")
-def app(environment):
+def app(custom):
     """Generate application from factories model."""
-    return create_app()
+    return create_app(**custom)
 
 
 @pytest.fixture(scope="module")
 def client(app):
     """Produce test client from application instance."""
     return TestClient(app)
+
+
+@pytest.fixture(scope="module")
+def headers(request):
+    """Fixture to provide each testing header."""
+    return request.param if request.param else {}
