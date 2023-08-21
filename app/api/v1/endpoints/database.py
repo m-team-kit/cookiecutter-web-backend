@@ -14,7 +14,7 @@ router = APIRouter()
     operation_id="createDB",
 )
 def create_database(
-    current_user: models.User = Depends(deps.get_user),
+    valid_secret: models.User = Depends(deps.check_secret),
 ) -> None:
     """
     Use this method to create local copy of the database from YAML files in
@@ -31,7 +31,7 @@ def create_database(
     operation_id="updateDB",
 )
 def update_database(
-    current_user: models.User = Depends(deps.get_user),
+    valid_secret: models.User = Depends(deps.check_secret),
 ) -> None:
     """
     Use this method to update local copy of the database from YAML files in

@@ -31,6 +31,19 @@ class Settings(BaseSettings, case_sensitive=False):
             return None
         return v
 
+    # List of trusted OpenID Connect providers
+    trusted_op: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
+
+    # API secret key to operate database
+    secret: str
+
+    @validator("secret", pre=True)
+    @classmethod
+    def secret_quality(cls, v: str) -> str:
+        if len(v) < 12:
+            raise ValueError(v, "secret must be at least 12 characters long")
+        return v
+
     postgres_host: str
     postgres_user: str
     postgres_password: str
@@ -74,6 +87,3 @@ class Settings(BaseSettings, case_sensitive=False):
     @classmethod
     def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:
         return bool(values.get("smtp_host") and values.get("smtp_port") and values.get("emails_from_email"))
-
-    # List of trusted OpenID Connect providers
-    trusted_op: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
