@@ -40,13 +40,13 @@ def test_403_forbidden(response: Response) -> None:
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_DB_length(templates: List[Template]) -> None:
+def test_db_length(templates: List[Template]) -> None:
     assert len(templates) == 3
 
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_DB_template(templates: List[Template]) -> None:
+def test_db_template(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
     assert isinstance(templates["my_template_1"].id, UUID)
     assert templates["my_template_1"].repoFile == "my_template_1.json"
@@ -61,8 +61,8 @@ def test_DB_template(templates: List[Template]) -> None:
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_DB_scores(templates: List[Template]) -> None:
+def test_db_scores(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
     for template in templates.values():
-        assert template.score == None
+        assert template.score is None
         assert template.scores == []
