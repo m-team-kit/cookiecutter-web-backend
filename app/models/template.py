@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
+from app.utils import score_calculation
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
@@ -26,7 +27,7 @@ class Template(Base):
     picture: Mapped[str] = mapped_column()
     gitLink: Mapped[str] = mapped_column()
     gitCheckout: Mapped[str] = mapped_column()
-    score = hybrid_property(lambda self: sum(score.value for score in self.scores) / len(self.scores))
+    score = hybrid_property(score_calculation)
     scores: Mapped[List["Score"]] = relationship(cascade="all, delete")
 
 

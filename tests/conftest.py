@@ -4,6 +4,7 @@ See: https://fastapi.tiangolo.com/tutorial/testing/
 # pylint: disable=redefined-outer-name
 import os
 import tomllib
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -12,7 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from app import create_app
+from app import create_app, crud
 from app.core import database
 
 
@@ -43,7 +44,7 @@ def environment(config, postgresql_proc):
 
 @pytest.fixture(scope="session")
 def sql_database(config, postgresql_proc):
-    """Returns a state maintained database of postgresql"""
+    """Returns a state maintained database of postgresql."""
     config["DATABASE"]["host"] = postgresql_proc.host
     config["DATABASE"]["port"] = postgresql_proc.port
     config["DATABASE"]["user"] = postgresql_proc.user
@@ -53,7 +54,7 @@ def sql_database(config, postgresql_proc):
 
 @pytest.fixture(scope="session")
 def sql_engine(sql_database):
-    """Returns a database engine of postgresql"""
+    """Returns a database engine of postgresql."""
     authentication = f"{sql_database.user}:{sql_database.password}"
     netloc = f"{sql_database.host}:{sql_database.port}"
     connection = f"postgresql+psycopg2://{authentication}@{netloc}/{sql_database.dbname}"
@@ -68,8 +69,8 @@ def create_all(sql_engine):
 
 
 @pytest.fixture(scope="module")
-def sql_sessionmaker(sql_engine):
-    """Returns a database sessionmaker of postgresql"""
+def session_generator(sql_engine):
+    """Returns a database session generator of postgresql."""
     return sessionmaker(autocommit=False, autoflush=False, bind=sql_engine)
 
 
@@ -98,5 +99,8 @@ def headers(request):
 
 
 @pytest.fixture(scope="module")
-def templates(response, database):
-    return []  # TODO: Return templates from database
+def templates(response, session_generator):
+    """Fixture to provide database templates after request."""
+    with session_generator() as session:
+        templates = crud.template.get_multi(session, skip=0, limit=None)
+        yield {Path(t.repoFile).stem: t for t in templates}
