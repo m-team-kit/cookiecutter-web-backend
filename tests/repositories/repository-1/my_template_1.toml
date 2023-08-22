@@ -1,8 +1,0 @@
-[information]
-display_name = "Template 1"
-description = "This is a test for template 1"
-
-[template]
-url = "https://github.com/someone/template_1"
-checkout = "main"
-password = ""

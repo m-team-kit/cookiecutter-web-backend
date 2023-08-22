@@ -1,0 +1,9 @@
+{
+    "title": "My Template 3",
+    "summary": "Template example 3",
+    "language": "Python",
+    "tags": [ "Tag1", "Tag2" ],
+    "picture": "https://picture-url/template_3",
+    "gitLink": "https://some-git-link/template_3",
+    "gitCheckout": "main"
+}
