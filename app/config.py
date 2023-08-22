@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings, case_sensitive=False):
     project_name: str
     favicon_path: str = "favicon.ico"
+    repository_url: AnyHttpUrl
 
     # `cors_origins` is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \

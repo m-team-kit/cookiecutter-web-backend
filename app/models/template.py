@@ -16,13 +16,13 @@ if TYPE_CHECKING:
 
 class Template(Base):
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
-    repoFile: Mapped[str] = mapped_column(index=True)
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     modified: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now(), nullable=False)
+    repoFile: Mapped[str] = mapped_column(index=True)
     title: Mapped[str] = mapped_column()
     summary: Mapped[str] = mapped_column()
     language: Mapped[str] = mapped_column(index=True)
-    tags: Mapped[List["Tag"]] = relationship(cascade="all, delete")
+    tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete")
     picture: Mapped[str] = mapped_column()
     gitLink: Mapped[str] = mapped_column()
     gitCheckout: Mapped[str] = mapped_column()
@@ -33,11 +33,13 @@ class Template(Base):
 class Tag(Base):
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("template.id"))
-    name: Mapped[str] = mapped_column(index=True, unique=True)
+    name: Mapped[str] = mapped_column(index=True)
 
 
 class Score(Base):
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
+    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    modified: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now(), nullable=False)
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("template.id"))
     value: Mapped[float] = mapped_column()
     owner_subject: Mapped[str] = mapped_column()

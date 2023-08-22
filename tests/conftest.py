@@ -7,11 +7,13 @@ import tomllib
 
 import pytest
 from fastapi.testclient import TestClient
-from flaat.user_infos import UserInfos
-from pytest_postgresql import factories
 from pytest_postgresql.janitor import DatabaseJanitor
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 from app import create_app
+from app.core import database
 
 
 @pytest.fixture(scope="session", params=["config-1"])
@@ -39,7 +41,7 @@ def environment(config, postgresql_proc):
         os.environ[key] = value
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def sql_database(config, postgresql_proc):
     """Returns a state maintained database of postgresql"""
     config["DATABASE"]["host"] = postgresql_proc.host
@@ -47,6 +49,28 @@ def sql_database(config, postgresql_proc):
     config["DATABASE"]["user"] = postgresql_proc.user
     with DatabaseJanitor(**config["DATABASE"]) as database:
         yield database
+
+
+@pytest.fixture(scope="session")
+def sql_engine(sql_database):
+    """Returns a database engine of postgresql"""
+    authentication = f"{sql_database.user}:{sql_database.password}"
+    netloc = f"{sql_database.host}:{sql_database.port}"
+    connection = f"postgresql+psycopg2://{authentication}@{netloc}/{sql_database.dbname}"
+    return create_engine(connection, echo=False, poolclass=NullPool)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_all(sql_engine):
+    """Create all tables in the database."""
+    database.Base.metadata.create_all(bind=sql_engine)
+    database.Token.metadata.create_all(bind=sql_engine)
+
+
+@pytest.fixture(scope="module")
+def sql_sessionmaker(sql_engine):
+    """Returns a database sessionmaker of postgresql"""
+    return sessionmaker(autocommit=False, autoflush=False, bind=sql_engine)
 
 
 @pytest.fixture(scope="module", name="custom")
@@ -71,3 +95,8 @@ def client(app):
 def headers(request):
     """Fixture to provide each testing header."""
     return request.param if request.param else {}
+
+
+@pytest.fixture(scope="module")
+def templates(response, database):
+    return []  # TODO: Return templates from database

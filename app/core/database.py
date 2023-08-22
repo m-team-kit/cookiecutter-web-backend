@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from fastapi import FastAPI
@@ -15,6 +16,14 @@ def init_app(app: FastAPI) -> None:
     app.state.SessionLocal = SessionLocal
 
 
+camel2snake_pattern = re.compile(r"(?<!^)(?=[A-Z])")
+
+
+def camel_to_snake(name: str) -> str:
+    """Convert CamelCase to snake_case."""
+    return camel2snake_pattern.sub("_", name).lower()
+
+
 class Base(DeclarativeBase):
     id: Any
     __name__: str
@@ -23,7 +32,7 @@ class Base(DeclarativeBase):
     @declared_attr
     @classmethod
     def __tablename__(cls) -> str:
-        return cls.__name__.lower()
+        return camel_to_snake(cls.__name__)
 
 
 class Token(DeclarativeBase):
@@ -35,4 +44,4 @@ class Token(DeclarativeBase):
     @declared_attr
     @classmethod
     def __tablename__(cls) -> str:
-        return cls.__name__.lower()
+        return camel_to_snake(cls.__name__)

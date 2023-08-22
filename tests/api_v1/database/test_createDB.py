@@ -16,10 +16,9 @@ def response(client: TestClient, headers: Dict) -> None:
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_HTTP_200_OK(response: Response) -> None:
-    """Tests the response status code is 200 and valid."""
-    assert response.status_code == 200
-    assert response.json() == {}  # TODO: Fix response
+def test_HTTP_204_NO_CONTENT(response: Response) -> None:
+    """Tests the response status code is 204 and valid."""
+    assert response.status_code == 204
 
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
@@ -41,7 +40,7 @@ def test_HTTP_403_UNAUTHORIZED(response: Response) -> None:
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_DB_templates(response: Response, templates: List[Template]) -> None:
+def test_DB_templates(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
     assert isinstance(templates[0].id, UUID)
     assert templates[0].repoFile == "my_template_1.json"
@@ -56,7 +55,7 @@ def test_DB_templates(response: Response, templates: List[Template]) -> None:
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_DB_scores(response: Response, templates: List[Template]) -> None:
+def test_DB_scores(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
     for template in templates:
         assert template.score == 0.0
