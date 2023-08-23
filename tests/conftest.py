@@ -2,6 +2,7 @@
 See: https://fastapi.tiangolo.com/tutorial/testing/
 """
 # pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 import os
 import tomllib
 from pathlib import Path
@@ -53,7 +54,6 @@ def sql_engine(sql_database):
 def create_all(sql_engine):
     """Create all tables in the database."""
     database.Base.metadata.create_all(bind=sql_engine)
-    database.Token.metadata.create_all(bind=sql_engine)
     with sql_engine.connect() as connection:
         with open("tests/setup_db.sql", encoding="utf-8") as file:
             query = sa.text(file.read())
