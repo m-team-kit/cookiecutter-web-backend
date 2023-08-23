@@ -7,9 +7,9 @@ import tomllib
 from pathlib import Path
 
 import pytest
+import sqlalchemy as sa
 from fastapi.testclient import TestClient
 from pytest_postgresql.janitor import DatabaseJanitor
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
@@ -30,18 +30,6 @@ def configuration(configuration_path):
         return tomllib.load(file)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def environment(config, postgresql_proc):
-    """Patch fixture to set test env variables."""
-    os.environ["POSTGRES_SERVER"] = str(postgresql_proc.host)
-    os.environ["POSTGRES_PORT"] = str(postgresql_proc.port)
-    os.environ["POSTGRES_USER"] = str(postgresql_proc.user)
-    os.environ["POSTGRES_PASSWORD"] = config["DATABASE"]["password"]
-    os.environ["POSTGRES_DB"] = config["DATABASE"]["dbname"]
-    for key, value in config["ENVIRONMENT"].items():
-        os.environ[key] = value
-
-
 @pytest.fixture(scope="session")
 def sql_database(config, postgresql_proc):
     """Returns a state maintained database of postgresql."""
@@ -58,7 +46,7 @@ def sql_engine(sql_database):
     authentication = f"{sql_database.user}:{sql_database.password}"
     netloc = f"{sql_database.host}:{sql_database.port}"
     connection = f"postgresql+psycopg2://{authentication}@{netloc}/{sql_database.dbname}"
-    return create_engine(connection, echo=False, poolclass=NullPool)
+    return sa.create_engine(connection, echo=False, poolclass=NullPool)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -66,6 +54,23 @@ def create_all(sql_engine):
     """Create all tables in the database."""
     database.Base.metadata.create_all(bind=sql_engine)
     database.Token.metadata.create_all(bind=sql_engine)
+    with sql_engine.connect() as connection:
+        with open("tests/setup_db.sql", encoding="utf-8") as file:
+            query = sa.text(file.read())
+        connection.execute(query)
+        connection.commit()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def environment(config, postgresql_proc):
+    """Patch fixture to set test env variables."""
+    os.environ["POSTGRES_SERVER"] = str(postgresql_proc.host)
+    os.environ["POSTGRES_PORT"] = str(postgresql_proc.port)
+    os.environ["POSTGRES_USER"] = str(postgresql_proc.user)
+    os.environ["POSTGRES_PASSWORD"] = config["DATABASE"]["password"]
+    os.environ["POSTGRES_DB"] = config["DATABASE"]["dbname"]
+    for key, value in config["ENVIRONMENT"].items():
+        os.environ[key] = value
 
 
 @pytest.fixture(scope="module")
