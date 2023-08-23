@@ -90,7 +90,7 @@ def update_database(
         logger.debug("Cloning repository at %s.", tempdir)
         git.Repo.clone_from(
             url=f"{request.app.state.settings.repository_url}",
-            to_path=tempdir,
+            to_path=tempdir.name,
             branch="main",
             depth=1,
         )
@@ -100,7 +100,7 @@ def update_database(
         temp_files = [x.repoFile for x in templates]
 
         logger.debug("Collecting all json from repository.")
-        repo_files = [x.name for x in pathlib.Path(tempdir).glob("*.json")]
+        repo_files = [x.name for x in pathlib.Path(tempdir.name).glob("*.json")]
 
         logger.debug("Delete difference between database and repository.")
         to_delete = set(temp_files) - set(repo_files)
@@ -110,12 +110,12 @@ def update_database(
         logger.debug("Creating templates from json files.")
         to_create = set(repo_files) - set(temp_files)
         for repo_file in [x for x in repo_files if x in to_create]:
-            create_template(session, pathlib.Path(tempdir) / repo_file)
+            create_template(session, pathlib.Path(tempdir.name) / repo_file)
 
         logger.debug("Updating templates from json files.")
         to_update = set(temp_files) - set(to_delete)
         for template in [x for x in templates if x.repoFile in to_update]:
-            update_template(session, template, pathlib.Path(tempdir))
+            update_template(session, template, pathlib.Path(tempdir.name))
 
     except Exception as err:
         logger.error("Error updating local database: %s", err)
@@ -131,7 +131,7 @@ def create_template(session: Session, repo_file: pathlib.Path) -> None:
     logger.debug("Opening template file for %s.", repo_file)
     with open(repo_file, "r", encoding="utf-8") as file:
         template_kwds = json.load(file)
-        template_kwds["repoFile"] = repo_file
+        template_kwds["repoFile"] = repo_file.name
         logger.debug("Creating template %s.", template_kwds)
         crud.template.create(session, obj_in=template_kwds)
 

@@ -44,10 +44,13 @@ def test_403_forbidden(response: Response) -> None:
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
 def test_db_length(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
-    assert len(templates) == 3
+    assert len(templates) == 4
     assert "my_template_3" not in templates
+    assert "my_template_5" in templates
 
 
+@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
+@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
 def test_db_templates(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
     assert isinstance(templates["my_template_1"].id, UUID)
@@ -68,3 +71,4 @@ def test_db_scores(templates: List[Template]) -> None:
     assert templates["my_template_1"].score is None
     assert templates["my_template_2"].score is None
     assert templates["my_template_4"].score is None
+    assert templates["my_template_5"].score is None
