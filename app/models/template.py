@@ -45,4 +45,4 @@ class Score(Base):
     value: Mapped[float] = mapped_column()
     owner_subject: Mapped[str] = mapped_column()
     owner_issuer: Mapped[str] = mapped_column()
-    ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"])
+    __table_args__ = (ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"]), {})
