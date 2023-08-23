@@ -6,6 +6,7 @@ import tempfile
 
 import git
 from fastapi import APIRouter, Depends, Request, status
+from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -31,27 +32,36 @@ def create_database(
     Use this method to create local copy of the database from YAML files in
     the git repository.
     """
+    # pylint: disable=consider-using-with
+
     logger.info("Creating local database.")
-    logger.debug("Deleting all templates from database.")
-    session.query(models.Template).delete()
     logger.debug("Creating temporary directory.")
-    with tempfile.TemporaryDirectory() as tempdir:
-        logger.debug("Cloning repository at %s.", tempdir)
+    tempdir = tempfile.TemporaryDirectory()
+
+    try:
+        logger.debug("Cloning repository at %s.", tempdir.name)
         git.Repo.clone_from(
             url=f"{request.app.state.settings.repository_url}",
-            to_path=tempdir,
+            to_path=tempdir.name,
             branch="main",
             depth=1,
         )
+
+        logger.debug("Deleting all templates from database.")
+        session.query(models.Template).delete()
+
         logger.debug("Creating templates from json files.")
-        for path in pathlib.Path(tempdir).glob("*.json"):
-            logger.debug("Opening template file for %s.", path.name)
-            with open(path, "r", encoding="utf-8") as file:
-                template_kwds = json.load(file)
-                template_kwds["repoFile"] = path.name
-                logger.debug("Creating template %s.", template_kwds)
-                crud.template.create(session, obj_in=template_kwds)
-    logger.info("Local database created.")
+        for path in pathlib.Path(tempdir.name).glob("*.json"):
+            create_template(session, path)
+
+    except Exception as err:
+        logger.error("Error creating local database: %s", err)
+        raise HTTPException("Server error")  # TODO: Too generic exception
+
+    finally:
+        logger.debug("Cleaning up temporary directory.")
+        tempdir.cleanup()
+        logger.info("Local database created.")
 
 
 @router.post(
@@ -70,4 +80,65 @@ def update_database(
     Use this method to update local copy of the database from YAML files in
     the git repository.
     """
-    raise NotImplementedError
+    # pylint: disable=consider-using-with
+
+    logger.info("Creating local database.")
+    logger.debug("Creating temporary directory.")
+    tempdir = tempfile.TemporaryDirectory()
+
+    try:
+        logger.debug("Cloning repository at %s.", tempdir)
+        git.Repo.clone_from(
+            url=f"{request.app.state.settings.repository_url}",
+            to_path=tempdir,
+            branch="main",
+            depth=1,
+        )
+
+        logger.debug("Collect all templates from database.")
+        templates = crud.template.get_multi(session, limit=None)
+        temp_files = [x.repoFile for x in templates]
+
+        logger.debug("Collecting all json from repository.")
+        repo_files = [x.name for x in pathlib.Path(tempdir).glob("*.json")]
+
+        logger.debug("Delete difference between database and repository.")
+        to_delete = set(temp_files) - set(repo_files)
+        for template in [x for x in templates if x.repoFile in to_delete]:
+            crud.template.remove(session, id=template.id)
+
+        logger.debug("Creating templates from json files.")
+        to_create = set(repo_files) - set(temp_files)
+        for repo_file in [x for x in repo_files if x in to_create]:
+            create_template(session, pathlib.Path(tempdir) / repo_file)
+
+        logger.debug("Updating templates from json files.")
+        to_update = set(temp_files) - set(to_delete)
+        for template in [x for x in templates if x.repoFile in to_update]:
+            update_template(session, template, pathlib.Path(tempdir))
+
+    except Exception as err:
+        logger.error("Error updating local database: %s", err)
+        raise HTTPException("Server error")  # TODO: Too generic exception
+
+    finally:
+        logger.debug("Cleaning up temporary directory.")
+        tempdir.cleanup()
+        logger.info("Local database updated.")
+
+
+def create_template(session: Session, repo_file: pathlib.Path) -> None:
+    logger.debug("Opening template file for %s.", repo_file)
+    with open(repo_file, "r", encoding="utf-8") as file:
+        template_kwds = json.load(file)
+        template_kwds["repoFile"] = repo_file
+        logger.debug("Creating template %s.", template_kwds)
+        crud.template.create(session, obj_in=template_kwds)
+
+
+def update_template(session: Session, template: models.Template, dir: pathlib.Path) -> None:
+    logger.debug("Opening template file for %s.", template.repoFile)
+    with open(dir / template.repoFile, "r", encoding="utf-8") as file:
+        template_kwds = json.load(file)
+        logger.debug("Updating template %s.", template_kwds)
+        crud.template.update(session, db_obj=template, obj_in=template_kwds)
