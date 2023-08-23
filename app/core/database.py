@@ -25,19 +25,6 @@ def camel_to_snake(name: str) -> str:
 
 
 class Base(DeclarativeBase):
-    id: Any
-    __name__: str
-
-    # Generate __tablename__ automatically
-    @declared_attr
-    @classmethod
-    def __tablename__(cls) -> str:
-        return camel_to_snake(cls.__name__)
-
-
-class Token(DeclarativeBase):
-    subject: str
-    issuer: str
     __name__: str
 
     # Generate __tablename__ automatically

@@ -21,9 +21,9 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
-from app.core.database import Base, Token  # noqa
+from app.core.database import Base  # noqa
 
-target_metadata = [Base.metadata, Token.metadata]
+target_metadata = [Base.metadata]
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

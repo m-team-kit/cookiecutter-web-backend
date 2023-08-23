@@ -27,7 +27,7 @@ async def get_user(
     token: HTTPAuthorizationCredentials = Depends(bearer_token),
 ) -> models.User:
     token_info = request.app.state.flaat.get_user_infos_from_access_token(token.credentials)
-    return crud.user.get(session, subject=token_info.subject, issuer=token_info.issuer)
+    return crud.user.get(session, id=(token_info.subject, token_info.issuer))
 
 
 async def check_secret(
