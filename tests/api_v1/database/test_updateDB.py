@@ -48,7 +48,7 @@ def test_db_length(templates: List[Template]) -> None:
     assert "my_template_3" not in templates
 
 
-def test_db_tempaltes(templates: List[Template]) -> None:
+def test_db_templates(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
     assert isinstance(templates["my_template_1"].id, UUID)
     assert templates["my_template_1"].repoFile == "my_template_1.json"
