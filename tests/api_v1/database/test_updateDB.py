@@ -1,8 +1,12 @@
 # pylint: disable=redefined-outer-name
-from typing import Dict
+from typing import Dict, List
+from uuid import UUID
+
 import pytest
 from fastapi import Response
 from fastapi.testclient import TestClient
+
+from app.models.template import Template
 
 
 @pytest.fixture(scope="module")
@@ -14,15 +18,14 @@ def response(client: TestClient, headers: Dict) -> None:
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_HTTP_200_OK(response: Response) -> None:
-    """Tests the response status code is 200 and valid."""
-    assert response.status_code == 200
-    assert response.json() == {}  # TODO: Fix response
+def test_204_no_content(response: Response) -> None:
+    """Tests the response status code is 204 and valid."""
+    assert response.status_code == 204
 
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer bad-secret"}], indirect=True)
-def test_HTTP_401_UNAUTHORIZED(response: Response) -> None:
+def test_401_unauthorized(response: Response) -> None:
     """Tests the response status code is 401 and valid."""
     assert response.status_code == 401
     assert response.json() == {"detail": "Incorrect secret"}
@@ -31,7 +34,37 @@ def test_HTTP_401_UNAUTHORIZED(response: Response) -> None:
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{}], indirect=True)
-def test_HTTP_403_UNAUTHORIZED(response: Response) -> None:
+def test_403_forbidden(response: Response) -> None:
     """Tests the response status code is 403 and valid."""
     assert response.status_code == 403
     assert response.json() == {"detail": "Not authenticated"}
+
+
+@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
+@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
+def test_db_length(templates: List[Template]) -> None:
+    """Tests the database contains the correct templates."""
+    assert len(templates) == 3
+    assert "my_template_3" not in templates
+
+
+def test_db_tempaltes(templates: List[Template]) -> None:
+    """Tests the database contains the correct templates."""
+    assert isinstance(templates["my_template_1"].id, UUID)
+    assert templates["my_template_1"].repoFile == "my_template_1.json"
+    assert templates["my_template_1"].title == "My Template 1"
+    assert templates["my_template_1"].summary == "Template example 1"
+    assert templates["my_template_1"].language == "Python"
+    assert sorted(x.name for x in templates["my_template_1"].tags) == ["Tag1", "Tag2"]
+    assert templates["my_template_1"].picture == "https://picture-url/template_1"
+    assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
+    assert templates["my_template_1"].gitCheckout == "main"
+
+
+@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
+@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
+def test_db_scores(templates: List[Template]) -> None:
+    """Tests the database contains the correct templates."""
+    assert templates["my_template_1"].score is not None
+    assert templates["my_template_2"].score is not None
+    assert templates["my_template_4"].score is None
