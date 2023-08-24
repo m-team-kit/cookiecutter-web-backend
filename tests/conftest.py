@@ -53,7 +53,7 @@ def sql_engine(sql_database):
 @pytest.fixture(scope="session", autouse=True)
 def environment(config, postgresql_proc):
     """Patch fixture to set test env variables."""
-    os.environ["POSTGRES_SERVER"] = str(postgresql_proc.host)
+    os.environ["POSTGRES_HOST"] = str(postgresql_proc.host)
     os.environ["POSTGRES_PORT"] = str(postgresql_proc.port)
     os.environ["POSTGRES_USER"] = str(postgresql_proc.user)
     os.environ["POSTGRES_PASSWORD"] = config["DATABASE"]["password"]
