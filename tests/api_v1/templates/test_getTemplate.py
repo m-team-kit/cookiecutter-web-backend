@@ -21,15 +21,15 @@ def test_200_ok(response: Response) -> None:
     assert response.status_code == 200
     # Assert template in response is valid
     message = response.json()
-    assert isinstance(message.id, UUID)
-    assert message.repoFile == "my_template_1.json"
-    assert message.title == "My Template 1"
-    assert message.summary == "Template example 1"
-    assert message.language == "Python"
-    assert sorted(x.name for x in message.tags) == ["Tag1", "Tag2"]
-    assert message.picture == "https://picture-url/template_1"
-    assert message.gitLink == "https://some-git-link/template_1"
-    assert message.gitCheckout == "main"
+    assert message["id"] == "bced037a-a326-425d-aa03-5d3cbc9aa3d1"
+    assert message["repoFile"] == "my_template_1.json"
+    assert message["title"] == "My Template 1"
+    assert message["summary"] == "Template example 1"
+    assert message["language"] == "Python"
+    assert message["tags"] == ["Tag1", "Tag2"]
+    assert message["picture"] == "https://picture-url/template_1"
+    assert message["gitLink"] == "https://some-git-link/template_1"
+    assert message["gitCheckout"] == "main"
 
 
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)

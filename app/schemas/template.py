@@ -1,7 +1,9 @@
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+
+from app import models
 
 
 # Shared properties
@@ -47,6 +49,11 @@ class TemplateInDBBase(TemplateBase):
 # Properties to return to client
 class Template(TemplateInDBBase):
     pass
+
+    @validator("tags", pre=True)
+    @classmethod
+    def item_name(cls, v: List[models.Tag]) -> List[str]:
+        return [tag.name for tag in v]
 
 
 # Properties properties stored in DB

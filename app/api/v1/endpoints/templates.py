@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, Body, status
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
-from app.core import authentication as auth
 from app.api import dependencies as deps
 
 router = APIRouter()
