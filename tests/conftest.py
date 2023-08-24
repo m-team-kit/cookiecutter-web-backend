@@ -102,7 +102,7 @@ def client(app):
 @pytest.fixture(scope="module")
 def headers(request):
     """Fixture to provide each testing header."""
-    return request.param if request.param else {}
+    return request.param if hasattr(request, "param") else {}
 
 
 @pytest.fixture(scope="module")
