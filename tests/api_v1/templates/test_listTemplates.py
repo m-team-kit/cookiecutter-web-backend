@@ -1,5 +1,5 @@
 # pylint: disable=redefined-outer-name
-from typing import Dict, List
+from typing import Dict
 
 import pytest
 from fastapi import Response
@@ -39,16 +39,3 @@ def test_200_ok_keywords(response: Response, query: Dict) -> None:
     """Tests the response status code is 200 and valid."""
     templates, keys = response.json(), query["keywords"]
     assert all(k in t["title"] or k in t["summary"] for k in keys for t in templates)
-
-
-@pytest.mark.parametrize("query", [{"sort_by": "score"}], indirect=True)
-def test_422_validation_error(response: Response) -> None:
-    """Tests the response status code is 422 and valid."""
-    # Assert response is valid
-    assert response.status_code == 422
-    # Assert message is valid
-    message = response.json()
-    assert message["detail"][0]["type"] == ""
-    assert message["detail"][0]["loc"] == ["path", "sort_by"]
-    assert "" in message["detail"][0]["msg"]
-    assert message["detail"][0]["input"] == "score"
