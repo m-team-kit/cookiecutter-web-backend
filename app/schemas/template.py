@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional, Set
 from uuid import UUID
 
 from pydantic import BaseModel, validator
@@ -12,7 +12,7 @@ class TemplateBase(BaseModel):
     title: Optional[str] = None
     summary: Optional[str] = None
     language: Optional[str] = None
-    tags: List[str] = []
+    tags: Set[str] = []
     picture: Optional[str] = None
     gitLink: Optional[str] = None
     gitCheckout: Optional[str] = None
@@ -36,7 +36,7 @@ class TemplateInDBBase(TemplateBase):
     title: str
     summary: str
     language: str
-    tags: List[str]
+    tags: Set[str]
     picture: str
     gitLink: str
     gitCheckout: str
@@ -49,11 +49,6 @@ class TemplateInDBBase(TemplateBase):
 # Properties to return to client
 class Template(TemplateInDBBase):
     pass
-
-    @validator("tags", pre=True)
-    @classmethod
-    def item_name(cls, v: List[models.Tag]) -> List[str]:
-        return [tag.name for tag in v]
 
 
 # Properties properties stored in DB

@@ -2,14 +2,13 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.models import Tag, Template
+from app.models import Template
 from app.schemas.template import TemplateCreate, TemplateUpdate
 
 
 class CRUDTemplate(CRUDBase[Template, TemplateCreate, TemplateUpdate]):
     def create(self, session: Session, *, obj_in: TemplateCreate) -> Template:
         kwds = jsonable_encoder(obj_in)
-        kwds["tags"] = set(Tag(name=tag) for tag in kwds["tags"])
         db_obj = Template(**kwds)  # type: ignore
         session.add(db_obj)
         session.commit()

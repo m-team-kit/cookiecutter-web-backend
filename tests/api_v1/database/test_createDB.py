@@ -31,7 +31,7 @@ def test_204_no_content(response: Response, templates: List[Template]) -> None:
     assert templates["my_template_1"].title == "Edited Template 1"
     assert templates["my_template_1"].summary == "Template edited 1"
     assert templates["my_template_1"].language == "Python"
-    assert sorted(x.name for x in templates["my_template_1"].tags) == ["Tag1", "Tag2"]
+    assert templates["my_template_1"].tags == set(["Tag1", "Tag2"])
     assert templates["my_template_1"].picture == "https://picture-url/template_1"
     assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
     assert templates["my_template_1"].gitCheckout == "dev"

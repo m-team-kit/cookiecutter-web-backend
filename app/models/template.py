@@ -23,12 +23,20 @@ class Template(Base):
     title: Mapped[str] = mapped_column()
     summary: Mapped[str] = mapped_column()
     language: Mapped[str] = mapped_column(index=True)
-    tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete", passive_deletes=True)
     picture: Mapped[str] = mapped_column()
     gitLink: Mapped[str] = mapped_column()
     gitCheckout: Mapped[str] = mapped_column()
     score = hybrid_property(score_calculation)
     scores: Mapped[List["Score"]] = relationship(cascade="all, delete", passive_deletes=True)
+    _tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete", passive_deletes=True)
+
+    @property
+    def tags(self) -> List[str]:
+        return set(tag.name for tag in self._tags)
+
+    @tags.setter
+    def tags(self, tags: List[str]) -> None:
+        self._tags = set(Tag(name=tag) for tag in tags)
 
 
 class Tag(Base):
@@ -45,4 +53,7 @@ class Score(Base):
     value: Mapped[float] = mapped_column()
     owner_subject: Mapped[str] = mapped_column()
     owner_issuer: Mapped[str] = mapped_column()
-    __table_args__ = (ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"], ondelete="CASCADE"), {})
+    __table_args__ = (
+        ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"], ondelete="CASCADE"),
+        {},
+    )
