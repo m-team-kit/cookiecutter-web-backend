@@ -84,7 +84,7 @@ def session_generator(sql_engine):
 @pytest.fixture(scope="module", name="custom")
 def custom_settings(request):
     """Fixture to provide each testing custom configuration values."""
-    return request.param
+    return request.param if hasattr(request, "param") else {}
 
 
 @pytest.fixture(scope="module")

@@ -16,14 +16,12 @@ def response(client: TestClient, headers: Dict) -> None:
     return response
 
 
-@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
 def test_204_no_content(response: Response) -> None:
     """Tests the response status code is 204 and valid."""
     assert response.status_code == 204
 
 
-@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer bad-secret"}], indirect=True)
 def test_401_unauthorized(response: Response) -> None:
     """Tests the response status code is 401 and valid."""
@@ -32,7 +30,6 @@ def test_401_unauthorized(response: Response) -> None:
     assert response.headers["WWW-Authenticate"] == "Bearer"
 
 
-@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{}], indirect=True)
 def test_403_forbidden(response: Response) -> None:
     """Tests the response status code is 403 and valid."""
@@ -40,7 +37,6 @@ def test_403_forbidden(response: Response) -> None:
     assert response.json() == {"detail": "Not authenticated"}
 
 
-@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
 def test_db_length(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
@@ -49,7 +45,6 @@ def test_db_length(templates: List[Template]) -> None:
     assert "my_template_5" in templates
 
 
-@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
 def test_db_templates(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
@@ -64,7 +59,6 @@ def test_db_templates(templates: List[Template]) -> None:
     assert templates["my_template_1"].gitCheckout == "dev"
 
 
-@pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
 def test_db_scores(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
