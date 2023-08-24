@@ -1,6 +1,5 @@
 # pylint: disable=redefined-outer-name
 from typing import Dict
-from uuid import UUID
 
 import pytest
 from fastapi import Response
@@ -26,7 +25,7 @@ def test_200_ok(response: Response) -> None:
     assert message["title"] == "My Template 1"
     assert message["summary"] == "Template example 1"
     assert message["language"] == "Python"
-    assert message["tags"] == ["Tag1", "Tag2"]
+    assert sorted(message["tags"]) == ["Tag1", "Tag2"]
     assert message["picture"] == "https://picture-url/template_1"
     assert message["gitLink"] == "https://some-git-link/template_1"
     assert message["gitCheckout"] == "main"

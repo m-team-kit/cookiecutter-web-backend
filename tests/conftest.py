@@ -99,8 +99,14 @@ def client(app):
     return TestClient(app)
 
 
-@pytest.fixture(scope="module")
-def headers(request):
+@pytest.fixture(scope="module", name="query")
+def query_parameters(request):
+    """Fixture to provide each testing query parameters."""
+    return request.param if hasattr(request, "param") else {}
+
+
+@pytest.fixture(scope="module", name="headers")
+def header_parameters(request):
     """Fixture to provide each testing header."""
     return request.param if hasattr(request, "param") else {}
 

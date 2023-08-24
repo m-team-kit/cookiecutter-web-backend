@@ -1,2 +1,54 @@
+# pylint: disable=redefined-outer-name
+from typing import Dict, List
+
+import pytest
+from fastapi import Response
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
+
+
+@pytest.fixture(scope="module")
+def response(client: TestClient, query: Dict, headers: Dict) -> None:
+    """Performs a POST request to create a database."""
+    response = client.get("/api/v1/templates/", params=query, headers=headers)
+    return response
+
+
+@pytest.mark.parametrize("query", [{}], indirect=True)
+def test_200_ok(response: Response) -> None:
+    """Tests the response status code is 200 and valid."""
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+@pytest.mark.parametrize("query", [{"language": "Python"}], indirect=True)
+def test_200_ok_message(response: Response, query: Dict) -> None:
+    """Tests the response status code is 200 and valid."""
+    templates = response.json()
+    assert all(template["language"] == query["language"] for template in templates)
+
+
+@pytest.mark.parametrize("query", [{"tags": ["Tag1", "Tag2"]}], indirect=True)
+def test_200_ok_tags(response: Response, query: Dict) -> None:
+    """Tests the response status code is 200 and valid."""
+    templates = response.json()
+    assert all(tag in template["tags"] for tag in query["tags"] for template in templates)
+
+
+@pytest.mark.parametrize("query", [{"keywords": ["my", "example"]}], indirect=True)
+def test_200_ok_keywords(response: Response, query: Dict) -> None:
+    """Tests the response status code is 200 and valid."""
+    templates, keys = response.json(), query["keywords"]
+    assert all(k in t["title"] or k in t["summary"] for k in keys for t in templates)
+
+
+@pytest.mark.parametrize("query", [{"sort_by": "score"}], indirect=True)
+def test_422_validation_error(response: Response) -> None:
+    """Tests the response status code is 422 and valid."""
+    # Assert response is valid
+    assert response.status_code == 422
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == ""
+    assert message["detail"][0]["loc"] == ["path", "sort_by"]
+    assert "" in message["detail"][0]["msg"]
+    assert message["detail"][0]["input"] == "score"
