@@ -55,13 +55,13 @@ def test_db_templates(templates: List[Template]) -> None:
     """Tests the database contains the correct templates."""
     assert isinstance(templates["my_template_1"].id, UUID)
     assert templates["my_template_1"].repoFile == "my_template_1.json"
-    assert templates["my_template_1"].title == "My Template 1"
-    assert templates["my_template_1"].summary == "Template example 1"
+    assert templates["my_template_1"].title == "Edited Template 1"
+    assert templates["my_template_1"].summary == "Template edited 1"
     assert templates["my_template_1"].language == "Python"
     assert sorted(x.name for x in templates["my_template_1"].tags) == ["Tag1", "Tag2"]
     assert templates["my_template_1"].picture == "https://picture-url/template_1"
     assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
-    assert templates["my_template_1"].gitCheckout == "main"
+    assert templates["my_template_1"].gitCheckout == "dev"
 
 
 @pytest.mark.parametrize("custom", [{"secret": "6de44315b565ea73f778282d"}], indirect=True)
