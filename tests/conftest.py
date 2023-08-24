@@ -51,17 +51,6 @@ def sql_engine(sql_database):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_all(sql_engine):
-    """Create all tables in the database."""
-    database.Base.metadata.create_all(bind=sql_engine)
-    with sql_engine.connect() as connection:
-        with open("tests/setup_db.sql", encoding="utf-8") as file:
-            query = sa.text(file.read())
-        connection.execute(query)
-        connection.commit()
-
-
-@pytest.fixture(scope="session", autouse=True)
 def environment(config, postgresql_proc):
     """Patch fixture to set test env variables."""
     os.environ["POSTGRES_SERVER"] = str(postgresql_proc.host)
@@ -71,6 +60,19 @@ def environment(config, postgresql_proc):
     os.environ["POSTGRES_DB"] = config["DATABASE"]["dbname"]
     for key, value in config["ENVIRONMENT"].items():
         os.environ[key] = value
+
+
+@pytest.fixture(scope="module", autouse=True)
+def create_all(sql_engine):
+    """Create all tables in the database."""
+    database.Base.metadata.create_all(bind=sql_engine)
+    with sql_engine.connect() as connection:
+        with open("tests/setup_db.sql", encoding="utf-8") as file:
+            query = sa.text(file.read())
+        connection.execute(query)
+        connection.commit()
+    yield
+    database.Base.metadata.drop_all(bind=sql_engine)
 
 
 @pytest.fixture(scope="module")
