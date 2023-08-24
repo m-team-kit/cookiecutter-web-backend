@@ -54,9 +54,9 @@ def create_database(
         for path in pathlib.Path(tempdir.name).glob("*.json"):
             create_template(session, path)
 
-    except Exception as err:
+    except Exception as err:  # TODO: Too generic exception
         logger.error("Error creating local database: %s", err)
-        raise HTTPException("Server error")  # TODO: Too generic exception
+        raise HTTPException("Server error")
 
     finally:
         logger.debug("Cleaning up temporary directory.")
@@ -117,9 +117,9 @@ def update_database(
         for template in [x for x in templates if x.repoFile in to_update]:
             update_template(session, template, pathlib.Path(tempdir.name))
 
-    except Exception as err:
+    except Exception as err:  # TODO: Too generic exception
         logger.error("Error updating local database: %s", err)
-        raise HTTPException("Server error")  # TODO: Too generic exception
+        raise HTTPException("Server error")
 
     finally:
         logger.debug("Cleaning up temporary directory.")
