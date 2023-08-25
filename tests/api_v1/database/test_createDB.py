@@ -42,7 +42,7 @@ def test_204_no_content(response: Response, templates: List[Template]) -> None:
     assert templates["my_template_5"].score is None
 
 
-@pytest.mark.parametrize("headers", [{"authorization": "bearer bad-secret"}], indirect=True)
+@pytest.mark.parametrize("headers", [{}], indirect=True)
 def test_401_unauthorized(response: Response) -> None:
     """Tests the response status code is 401 and valid."""
     # Assert response is valid
@@ -51,14 +51,14 @@ def test_401_unauthorized(response: Response) -> None:
     assert response.headers["WWW-Authenticate"] == "Bearer"
     # Assert message is valid
     message = response.json()
-    assert message == {"detail": "Incorrect secret"}
+    assert message == {"detail": "Not authenticated"}
 
 
-@pytest.mark.parametrize("headers", [{}], indirect=True)
+@pytest.mark.parametrize("headers", [{"authorization": "bearer bad-secret"}], indirect=True)
 def test_403_forbidden(response: Response) -> None:
     """Tests the response status code is 403 and valid."""
     # Asset response is valid
     assert response.status_code == 403
     # Assert message is valid
     message = response.json()
-    assert message == {"detail": "Not authenticated"}
+    assert message == {"detail": "Incorrect secret"}
