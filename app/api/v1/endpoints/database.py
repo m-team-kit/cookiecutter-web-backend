@@ -17,11 +17,14 @@ router = APIRouter()
 
 
 @router.post(
-    path=":create",
-    status_code=status.HTTP_204_NO_CONTENT,
-    responses={status.HTTP_500_INTERNAL_SERVER_ERROR: {}},
     summary="(Admin) Creates local database.",
     operation_id="createDB",
+    path=":create",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Database created."},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Server error."},
+    },
 )
 def create_database(
     request: Request,
@@ -65,11 +68,14 @@ def create_database(
 
 
 @router.post(
-    path=":update",
-    status_code=status.HTTP_204_NO_CONTENT,
-    responses={status.HTTP_500_INTERNAL_SERVER_ERROR: {}},
     summary="(Admin) Updates local database.",
     operation_id="updateDB",
+    path=":update",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Database updated."},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Server error."},
+    },
 )
 def update_database(
     request: Request,

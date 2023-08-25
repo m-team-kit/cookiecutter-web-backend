@@ -18,11 +18,12 @@ router = APIRouter()
     summary="(Public) Lists available templates.",
     operation_id="listTemplates",
     path="/",
+    status_code=status.HTTP_200_OK,
+    response_model=List[schemas.Template],
     responses={
         status.HTTP_200_OK: {"model": schemas.Template},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
     },
-    response_model=List[schemas.Template],
 )
 def read_templates(
     language: str = Query(default=None, description="Language of the template."),
@@ -70,12 +71,13 @@ def read_templates(
     summary="(Public) Finds template by UUID and shows its details.",
     operation_id="getTemplate",
     path="/{uuid}",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.Template,
     responses={
         status.HTTP_200_OK: {"model": schemas.Template},
         status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.GetError},
     },
-    response_model=schemas.Template,
 )
 def read_template(
     uuid: UUID,
@@ -110,13 +112,14 @@ def read_template(
     summary="(User) Rates specific template.",
     operation_id="rateTemplate",
     path="/{uuid}/score",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.Template,
     responses={
         status.HTTP_200_OK: {"model": schemas.Template},
         status.HTTP_201_CREATED: {"model": schemas.Template},
         status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.ScoreError},
     },
-    response_model=schemas.Template,
 )
 def rate_template(
     response: Response,

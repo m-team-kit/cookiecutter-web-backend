@@ -12,11 +12,12 @@ router = APIRouter()
 
 
 @router.get(
+    summary="(Public) Fetches fields of the cookiecutter template.",
+    operation_id="fetchFields",
     path="/{uuid}",
     status_code=status.HTTP_200_OK,
     response_model=Dict[str, Any],
-    summary="(Public) Fetches fields of the cookiecutter template.",
-    operation_id="fetchFields",
+    responses={},
 )
 def options_project(
     *,
@@ -32,12 +33,12 @@ def options_project(
 
 
 @router.post(
-    path="/{uuid}:generate",
-    status_code=status.HTTP_200_OK,
-    responses={200: {"content": {"application/zip": {}}}},
-    response_class=FileResponse,
     summary="(User) Generate software project from the template.",
     operation_id="createProject",
+    path="/{uuid}:generate",
+    status_code=status.HTTP_200_OK,
+    response_class=FileResponse,
+    responses={200: {"content": {"application/zip": {}}}},
 )
 def generate_project(
     *,
