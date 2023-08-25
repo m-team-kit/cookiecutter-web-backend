@@ -1,23 +1,30 @@
+import logging
 from typing import Generator
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app import crud, models
+from app import crud, models, schemas
+from flaat.exceptions import FlaatUnauthenticated
 
-bearer_token = HTTPBearer()
-bearer_secret = HTTPBearer()
+logger = logging.getLogger(__name__)
+bearer_token = HTTPBearer(auto_error=False)
+bearer_secret = HTTPBearer(auto_error=False)
 
 
 async def get_session(
         request: Request
 ) -> Generator:  # fmt: skip
     """Yield database session generator."""
+
     try:
+        logger.debug("Creating database session.")
         database_session = request.app.state.SessionLocal()
         yield database_session
+
     finally:
+        logger.debug("Closing database session.")
         database_session.close()
 
 
@@ -26,19 +33,63 @@ async def get_user(
     session: Session = Depends(get_session),
     token: HTTPAuthorizationCredentials = Depends(bearer_token),
 ) -> models.User:
-    token_info = request.app.state.flaat.get_user_infos_from_access_token(token.credentials)
-    return crud.user.get(session, id=(token_info.subject, token_info.issuer))
+    """Returns user from token."""
+
+    try:
+        logger.debug("If no token present raise Unauthenticated.")
+        if not token:
+            raise FlaatUnauthenticated("Not authenticated")
+
+        logger.debug("Getting user from token. %s", token.credentials)
+        token_info = request.app.state.flaat.get_user_infos_from_access_token(token.credentials)
+
+    except FlaatUnauthenticated as err:
+        logger.debug("Not authenticated.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from err
+
+    logger.debug("Getting user from database.")
+    user = crud.user.get(session, id=(token_info.subject, token_info.issuer))
+    if not user:  # If user not in the database, register it
+        logger.debug("Creating user in database.")
+        user_data = schemas.UserCreate(subject=token_info.subject, issuer=token_info.issuer)
+        user = crud.user.create(session, obj_in=user_data)
+
+    return user
 
 
 async def check_secret(
     request: Request,
     secret: HTTPAuthorizationCredentials = Depends(bearer_secret),
 ) -> None:
-    correct = request.app.state.settings.secret == secret.credentials
-    if not correct:
+    """Checks if secret is correct."""
+
+    try:
+        logger.debug("If no secret present raise ValueError.")
+        if not secret:
+            raise KeyError("Not authenticated")
+
+        logger.debug("Checking secret.")
+        correct = request.app.state.settings.secret == secret.credentials
+        if not correct:
+            logger.debug("Incorrect secret.")
+            raise ValueError("Incorrect secret")
+
+    except KeyError as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect secret",
+            detail=err.args[0],
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from err
+
+    except ValueError as err:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=err.args[0],
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from err
+
     return None

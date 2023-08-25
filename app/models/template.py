@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
-from app.utils import score_calculation
+from app import utils
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
@@ -26,7 +26,7 @@ class Template(Base):
     picture: Mapped[str] = mapped_column()
     gitLink: Mapped[str] = mapped_column()
     gitCheckout: Mapped[str] = mapped_column()
-    score = hybrid_property(score_calculation)
+    score = hybrid_property(utils.score_calculation)
     scores: Mapped[List["Score"]] = relationship(cascade="all, delete", passive_deletes=True)
     _tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete", passive_deletes=True)
 
@@ -53,6 +53,7 @@ class Score(Base):
     value: Mapped[float] = mapped_column()
     owner_subject: Mapped[str] = mapped_column()
     owner_issuer: Mapped[str] = mapped_column()
+    owner_id = hybrid_property(lambda self: (self.owner_subject, self.owner_issuer))
     __table_args__ = (
         ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"], ondelete="CASCADE"),
         {},
