@@ -111,6 +111,12 @@ def header_parameters(request):
     return request.param if hasattr(request, "param") else {}
 
 
+@pytest.fixture(scope="module", name="body")
+def body_parameters(request):
+    """Fixture to provide each testing body."""
+    return request.param if hasattr(request, "param") else {}
+
+
 @pytest.fixture(scope="module")
 def templates(response, session_generator):
     """Fixture to provide database templates after request."""
