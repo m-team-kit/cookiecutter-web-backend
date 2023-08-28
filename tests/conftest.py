@@ -153,18 +153,16 @@ def patch_flaat():
 
 
 user_options = {
-    "user_1-token": ("user_1", "issuer_1"),
-    "user_2-token": ("user_2", "issuer_1"),
-    "new_user-token": ("user_3", "issuer_2"),
+    "user_1-token": Mock(subject="user_1", issuer="issuer_1"),
+    "user_2-token": Mock(subject="user_2", issuer="issuer_1"),
+    "new_user-token": Mock(subject="user_3", issuer="issuer_2"),
+    "bad-token": None,
 }
 
 
 def user_patch(access_token: str, issuer_hint: str = ""):
     """Patch fixture that returns mocked token information."""
     try:
-        token_info = Mock()
-        token_info.subject = user_options[access_token][0]
-        token_info.issuer = user_options[access_token][1]
-        return token_info
+        return user_options[access_token]
     except KeyError:
         raise FlaatUnauthenticated() from None

@@ -43,6 +43,10 @@ async def get_user(
         logger.debug("Getting user from token. %s", token.credentials)
         token_info = request.app.state.flaat.get_user_infos_from_access_token(token.credentials)
 
+        logger.debug("Checking if token is valid.")
+        if not token_info:
+            raise FlaatUnauthenticated("Not authenticated")
+
     except FlaatUnauthenticated as err:
         logger.debug("Not authenticated.")
         raise HTTPException(
