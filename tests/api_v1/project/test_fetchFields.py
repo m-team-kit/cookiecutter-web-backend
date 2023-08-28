@@ -24,6 +24,7 @@ def test_200_ok(response: Response) -> None:
     assert message["file_name"] == "Howdy"
     assert message["greeting_recipient"] == "Julie"
 
+
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)
 def test_404_not_found(response: Response) -> None:
     """Tests the response status code is 404 and valid."""

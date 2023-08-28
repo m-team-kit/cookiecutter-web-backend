@@ -1,12 +1,16 @@
 # pylint: disable=unused-argument
+import io
 import json
 import logging
+import shutil
+import tempfile
 import urllib.request
 from typing import Any, Dict
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, status, HTTPException
-from fastapi.responses import FileResponse
+from cookiecutter.main import cookiecutter
+from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app import crud, models
@@ -68,7 +72,7 @@ def options_project(
     operation_id="createProject",
     path="/{uuid}:generate",
     status_code=status.HTTP_200_OK,
-    response_class=FileResponse,
+    response_class=StreamingResponse,
     responses={200: {"content": {"application/zip": {}}}},
 )
 def generate_project(
@@ -77,11 +81,41 @@ def generate_project(
     uuid: UUID,
     options_in: Dict[str, str] = Body(),
     current_user: models.User = Depends(deps.get_user),
-) -> FileResponse:
+) -> StreamingResponse:
     """
     Use this method to generate software project using the specific template.
     Generated project is returned as `.zip` file.
     """
-    # template = crud.template.get(db=session, id=uuid)
-    # return template.project(owner_id=current_user.id, options=options_in)
-    return FileResponse("favicon.ico", media_type="image/vnd.microsoft.icon")
+
+    logger.info("Generating software project from the template.")
+    try:
+        logger.debug("Fetching template with id: %s.", uuid)
+        template = crud.template.get(session, id=uuid)
+
+        logger.debug("Checking if template exists.")
+        if not template:
+            raise KeyError("Template not found")
+
+        logger.debug("Generating project into memory zip.")
+        project = create_project(template.gitLink, template.gitCheckout, options_in)
+
+        logger.debug("Returning cookiecutter.json file.")
+        return StreamingResponse(project, media_type="application/zip")
+
+    except KeyError as err:
+        logger.debug("Template %s not found: %s", uuid, err)
+        raise HTTPException(status_code=404, detail=err.args[0]) from err
+
+    except Exception as err:  # TODO: Too broad exception
+        logger.error("Error getting template %s: %s", uuid, err)
+        raise HTTPException("Server error") from err
+
+
+def create_project(url, checkout, options_in):
+    """Generate a project from a cookiecutter template and return it as a zip file."""
+    with tempfile.TemporaryDirectory() as tempdir:
+        cookiecutter(url, checkout, no_input=True, extra_context=options_in, output_dir=f"{tempdir}/project")
+        shutil.make_archive(f"{tempdir}/project", "zip", f"{tempdir}/project", logger=logger)
+        with open(f"{tempdir}/project.zip", "rb") as zip_file:
+            zip_contents = zip_file.read()
+        return io.BytesIO(zip_contents)
