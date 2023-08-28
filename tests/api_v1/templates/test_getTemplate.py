@@ -22,13 +22,13 @@ def test_200_ok(response: Response) -> None:
     message = response.json()
     assert message["id"] == "bced037a-a326-425d-aa03-5d3cbc9aa3d1"
     assert message["repoFile"] == "my_template_1.json"
-    assert message["title"] == "My Template 1"
-    assert message["summary"] == "Template example 1"
+    assert message["title"] == "HelloCookieCutter1"
+    assert message["summary"] == "Cookiecutter basics"
     assert message["language"] == "Python"
     assert sorted(message["tags"]) == ["Tag1", "Tag2"]
     assert message["picture"] == "https://picture-url/template_1"
-    assert message["gitLink"] == "https://some-git-link/template_1"
-    assert message["gitCheckout"] == "main"
+    assert message["gitLink"] == "https://github.com/BruceEckel/HelloCookieCutter1"
+    assert message["gitCheckout"] == "master"
 
 
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)
