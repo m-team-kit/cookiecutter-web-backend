@@ -1,13 +1,18 @@
+# pylint: disable=unused-argument
+import json
+import logging
+import urllib.request
 from typing import Any, Dict
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, status, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app import crud, models
 from app.api import dependencies as deps
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -17,7 +22,11 @@ router = APIRouter()
     path="/{uuid}",
     status_code=status.HTTP_200_OK,
     response_model=Dict[str, Any],
-    responses={},
+    responses={
+        status.HTTP_200_OK: {"model": Dict[str, Any]},
+        status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
+        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
+    },
 )
 def options_project(
     *,
@@ -28,8 +37,30 @@ def options_project(
     Use this method to fetch fields of the cookiecutter template to build the
     web form.
     """
-    template = crud.template.get(session, id=uuid)
-    return template.options
+
+    logger.info("Fetching fields of the cookiecutter template.")
+    try:
+        logger.debug("Fetching template with id: %s.", uuid)
+        template = crud.template.get(session, id=uuid)
+
+        logger.debug("Checking if template exists.")
+        if not template:
+            raise KeyError("Template not found")
+
+        logger.debug("Fetching cookiecutter.json file.")
+        url = f"{template.gitLink}/raw/{template.gitCheckout}/cookiecutter.json"
+        req = urllib.request.Request(url)
+
+        logger.debug("Returning cookiecutter.json file.")
+        return json.load(urllib.request.urlopen(req))
+
+    except KeyError as err:
+        logger.debug("Template %s not found: %s", uuid, err)
+        raise HTTPException(status_code=404, detail=err.args[0]) from err
+
+    except Exception as err:  # TODO: Too broad exception
+        logger.error("Error getting template %s: %s", uuid, err)
+        raise HTTPException("Server error") from err
 
 
 @router.post(

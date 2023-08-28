@@ -59,7 +59,7 @@ def create_database(
 
     except Exception as err:  # TODO: Too generic exception
         logger.error("Error creating local database: %s", err)
-        raise HTTPException("Server error")
+        raise HTTPException("Server error") from err
 
     finally:
         logger.debug("Cleaning up temporary directory.")
@@ -125,7 +125,7 @@ def update_database(
 
     except Exception as err:  # TODO: Too generic exception
         logger.error("Error updating local database: %s", err)
-        raise HTTPException("Server error")
+        raise HTTPException("Server error") from err
 
     finally:
         logger.debug("Cleaning up temporary directory.")

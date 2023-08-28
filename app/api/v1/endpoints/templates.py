@@ -21,7 +21,7 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
     response_model=List[schemas.Template],
     responses={
-        status.HTTP_200_OK: {"model": schemas.Template},
+        status.HTTP_200_OK: {"model": List[schemas.Template]},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
     },
 )
@@ -64,7 +64,7 @@ def read_templates(
 
     except Exception as err:  # TODO: Too broad exception
         logger.error("Error listing templates: %s", err)
-        raise HTTPException("Server error")
+        raise HTTPException("Server error") from err
 
 
 @router.get(
@@ -89,7 +89,7 @@ def read_template(
 
     logger.info("Getting template %s.", uuid)
     try:
-        logger.debug("Getting template using crud template.")
+        logger.debug("Fetching template with id: %s.", uuid)
         template = crud.template.get(session, id=uuid)
 
         logger.debug("Checking if template exists.")
@@ -105,7 +105,7 @@ def read_template(
 
     except Exception as err:  # TODO: Too broad exception
         logger.error("Error getting template %s: %s", uuid, err)
-        raise HTTPException("Server error")
+        raise HTTPException("Server error") from err
 
 
 @router.put(
@@ -163,4 +163,4 @@ def rate_template(
 
     except Exception as err:  # TODO: Too broad exception
         logger.error("Error rating template %s: %s", uuid, err)
-        raise HTTPException("Server error")
+        raise HTTPException("Server error") from err
