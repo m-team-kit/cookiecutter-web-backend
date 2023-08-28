@@ -1,12 +1,13 @@
 import logging
+import tempfile
 from typing import Generator
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from flaat.exceptions import FlaatUnauthenticated
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
-from flaat.exceptions import FlaatUnauthenticated
 
 logger = logging.getLogger(__name__)
 bearer_token = HTTPBearer(auto_error=False)
@@ -26,6 +27,15 @@ async def get_session(
     finally:
         logger.debug("Closing database session.")
         database_session.close()
+
+
+async def temp_folder() -> Generator:
+    """Yield temporary folder generator."""
+
+    logger.debug("Creating temporary folder.")
+    with tempfile.TemporaryDirectory() as tempdir:
+        yield tempdir
+        logger.debug("Removing temporary folder.")
 
 
 async def get_user(

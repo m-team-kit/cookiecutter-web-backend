@@ -28,6 +28,7 @@ router = APIRouter()
 )
 def create_database(
     request: Request,
+    tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
     valid_secret: models.User = Depends(deps.check_secret),
     session: Session = Depends(deps.get_session),
 ) -> None:
@@ -38,14 +39,12 @@ def create_database(
     # pylint: disable=consider-using-with
 
     logger.info("Creating local database.")
-    logger.debug("Creating temporary directory.")
-    tempdir = tempfile.TemporaryDirectory()
 
     try:
-        logger.debug("Cloning repository at %s.", tempdir.name)
+        logger.debug("Cloning repository at %s.", tempdir)
         git.Repo.clone_from(
             url=f"{request.app.state.settings.repository_url}",
-            to_path=tempdir.name,
+            to_path=tempdir,
             branch="main",
             depth=1,
         )
@@ -54,17 +53,12 @@ def create_database(
         session.query(models.Template).delete()
 
         logger.debug("Creating templates from json files.")
-        for path in pathlib.Path(tempdir.name).glob("*.json"):
+        for path in pathlib.Path(tempdir).glob("*.json"):
             create_template(session, path)
 
     except Exception as err:  # TODO: Too generic exception
         logger.error("Error creating local database: %s", err)
         raise HTTPException("Server error") from err
-
-    finally:
-        logger.debug("Cleaning up temporary directory.")
-        tempdir.cleanup()
-        logger.info("Local database created.")
 
 
 @router.post(
@@ -79,6 +73,7 @@ def create_database(
 )
 def update_database(
     request: Request,
+    tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
     valid_secret: models.User = Depends(deps.check_secret),
     session: Session = Depends(deps.get_session),
 ) -> None:
@@ -89,14 +84,12 @@ def update_database(
     # pylint: disable=consider-using-with
 
     logger.info("Creating local database.")
-    logger.debug("Creating temporary directory.")
-    tempdir = tempfile.TemporaryDirectory()
 
     try:
         logger.debug("Cloning repository at %s.", tempdir)
         git.Repo.clone_from(
             url=f"{request.app.state.settings.repository_url}",
-            to_path=tempdir.name,
+            to_path=tempdir,
             branch="main",
             depth=1,
         )
@@ -106,7 +99,7 @@ def update_database(
         temp_files = [x.repoFile for x in templates]
 
         logger.debug("Collecting all json from repository.")
-        repo_files = [x.name for x in pathlib.Path(tempdir.name).glob("*.json")]
+        repo_files = [x.name for x in pathlib.Path(tempdir).glob("*.json")]
 
         logger.debug("Delete difference between database and repository.")
         to_delete = set(temp_files) - set(repo_files)
@@ -116,21 +109,16 @@ def update_database(
         logger.debug("Creating templates from json files.")
         to_create = set(repo_files) - set(temp_files)
         for repo_file in [x for x in repo_files if x in to_create]:
-            create_template(session, pathlib.Path(tempdir.name) / repo_file)
+            create_template(session, pathlib.Path(tempdir) / repo_file)
 
         logger.debug("Updating templates from json files.")
         to_update = set(temp_files) - set(to_delete)
         for template in [x for x in templates if x.repoFile in to_update]:
-            update_template(session, template, pathlib.Path(tempdir.name))
+            update_template(session, template, pathlib.Path(tempdir))
 
     except Exception as err:  # TODO: Too generic exception
         logger.error("Error updating local database: %s", err)
         raise HTTPException("Server error") from err
-
-    finally:
-        logger.debug("Cleaning up temporary directory.")
-        tempdir.cleanup()
-        logger.info("Local database updated.")
 
 
 def create_template(session: Session, repo_file: pathlib.Path) -> None:
