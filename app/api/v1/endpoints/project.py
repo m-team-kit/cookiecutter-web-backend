@@ -69,11 +69,15 @@ def options_project(
 
 @router.post(
     summary="(User) Generate software project from the template.",
-    operation_id="createProject",
+    operation_id="generateProject",
     path="/{uuid}:generate",
     status_code=status.HTTP_200_OK,
     response_class=FileResponse,
-    responses={200: {"content": {"application/zip": {}}}},
+    responses={
+        status.HTTP_200_OK: {"content": {"application/zip": {}}},
+        status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
+        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
+    },
 )
 def generate_project(
     *,
