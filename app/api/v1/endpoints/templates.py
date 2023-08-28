@@ -54,10 +54,11 @@ def read_templates(
             )
 
         logger.debug("Filtering templates by tags: %s.", tags)
-        search = search.join(models.Template._tags)
-        search = search.filter(models.Tag.name.in_(tags))
-        search = search.group_by(models.Template.id)
-        search = search.having(sa.func.count(models.Tag.id) == len(tags))
+        if tags:
+            search = search.join(models.Template._tags)
+            search = search.filter(models.Tag.name.in_(tags))
+            search = search.group_by(models.Template.id)
+            search = search.having(sa.func.count(models.Tag.id) == len(tags))
 
         logger.debug("Returning templates.")
         return search.all()

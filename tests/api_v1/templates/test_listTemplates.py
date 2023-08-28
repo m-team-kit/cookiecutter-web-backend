@@ -14,10 +14,11 @@ def response(client: TestClient, query: Dict, headers: Dict) -> None:
 
 
 @pytest.mark.parametrize("query", [{}], indirect=True)
-def test_200_ok(response: Response) -> None:
+def test_200_ok_all(response: Response) -> None:
     """Tests the response status code is 200 and valid."""
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+    assert len(response.json()) == 4
 
 
 @pytest.mark.parametrize("query", [{"language": "Python"}], indirect=True)
