@@ -32,7 +32,7 @@ router = APIRouter()
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
     },
 )
-def options_project(
+def fetch_fields(
     *,
     session: Session = Depends(deps.get_session),
     uuid: UUID,
