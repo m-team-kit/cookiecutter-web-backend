@@ -13,7 +13,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from app import crud, models
+from app import models
 from app.api import dependencies as deps
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ def fetch_fields(
     logger.info("Fetching fields of the cookiecutter template.")
     try:
         logger.debug("Fetching template with id: %s.", uuid)
-        template = crud.template.get(session, id=uuid)
+        template = session.get(models.Template, uuid)
 
         logger.debug("Checking if template exists.")
         if not template:
@@ -95,7 +95,7 @@ def generate_project(
     logger.info("Generating software project from the template.")
     try:
         logger.debug("Fetching template with id: %s.", uuid)
-        template = crud.template.get(session, id=uuid)
+        template = session.get(models.Template, uuid)
 
         logger.debug("Checking if template exists.")
         if not template:

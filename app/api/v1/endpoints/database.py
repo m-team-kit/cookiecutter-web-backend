@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
-from app import crud, models
+from app import models
 from app.api import dependencies as deps
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,9 @@ def create_database(
         for path in pathlib.Path(tempdir).glob("*.json"):
             create_template(session, path)
 
+        logger.debug("Committing changes to database.")
+        session.commit()
+
     except Exception as err:  # TODO: Too generic exception
         logger.error("Error creating local database: %s", err)
         raise HTTPException("Server error") from err
@@ -95,7 +98,7 @@ def update_database(
         )
 
         logger.debug("Collect all templates from database.")
-        templates = crud.template.get_multi(session, limit=None)
+        templates = session.query(models.Template).all()
         temp_files = [x.repoFile for x in templates]
 
         logger.debug("Collecting all json from repository.")
@@ -104,7 +107,7 @@ def update_database(
         logger.debug("Delete difference between database and repository.")
         to_delete = set(temp_files) - set(repo_files)
         for template in [x for x in templates if x.repoFile in to_delete]:
-            crud.template.remove(session, id=template.id)
+            session.delete(template)
 
         logger.debug("Creating templates from json files.")
         to_create = set(repo_files) - set(temp_files)
@@ -115,6 +118,9 @@ def update_database(
         to_update = set(temp_files) - set(to_delete)
         for template in [x for x in templates if x.repoFile in to_update]:
             update_template(session, template, pathlib.Path(tempdir))
+
+        logger.debug("Committing changes to database.")
+        session.commit()
 
     except Exception as err:  # TODO: Too generic exception
         logger.error("Error updating local database: %s", err)
@@ -127,7 +133,7 @@ def create_template(session: Session, repo_file: pathlib.Path) -> None:
         template_kwds = json.load(file)
         template_kwds["repoFile"] = repo_file.name
         logger.debug("Creating template %s.", template_kwds)
-        crud.template.create(session, obj_in=template_kwds)
+        session.add(models.Template(**template_kwds))
 
 
 def update_template(session: Session, template: models.Template, dir: pathlib.Path) -> None:
@@ -135,4 +141,6 @@ def update_template(session: Session, template: models.Template, dir: pathlib.Pa
     with open(dir / template.repoFile, "r", encoding="utf-8") as file:
         template_kwds = json.load(file)
         logger.debug("Updating template %s.", template_kwds)
-        crud.template.update(session, db_obj=template, obj_in=template_kwds)
+        for key, value in template_kwds.items():
+            setattr(template, key, value)
+        session.add(template)

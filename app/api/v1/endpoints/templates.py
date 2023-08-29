@@ -7,7 +7,7 @@ import sqlalchemy as sa
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import models, schemas
 from app.api import dependencies as deps
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ def read_template(
     logger.info("Getting template %s.", uuid)
     try:
         logger.debug("Fetching template with id: %s.", uuid)
-        template = crud.template.get(session, id=uuid)
+        template = session.get(models.Template, uuid)
 
         logger.debug("Checking if template exists.")
         if not template:
@@ -140,24 +140,32 @@ def rate_template(
 
     logger.info("Rating template %s.", uuid)
     try:
-        logger.debug("Getting template using crud template.")
-        template = crud.template.get(session, id=uuid)
+        logger.debug("Fetching template with id: %s.", uuid)
+        template = session.get(models.Template, uuid)
 
         logger.debug("Checking if template exists.")
         if not template:
             raise KeyError("Template not found")
 
         logger.debug("Calculate response depending if user already rated.")
-        if (current_user.subject, current_user.issuer) in [x.owner_id for x in template.scores]:
-            logger.debug("User already rated this template.")
-            response.status_code = status.HTTP_200_OK
-            logger.debug("Updating template with new score.")
-            template = crud.template.update_rate(session, score, db_obj=template, user=current_user)
+        for score_item in template.scores:
+            if score_item.owner_id == (current_user.subject, current_user.issuer):
+                logger.debug("User already rated this template.")
+                response.status_code = status.HTTP_200_OK
+                logger.debug("Updating template with new score.")
+                score_item.value = score
+                break
         else:
             logger.debug("User has not rated this template yet.")
             response.status_code = status.HTTP_201_CREATED
             logger.debug("Adding score to template.")
-            template = crud.template.add_rate(session, score, db_obj=template, user=current_user)
+            score = models.Score(owner_subject=current_user.subject, owner_issuer=current_user.issuer, value=score)
+            template.scores.append(score)
+            session.add(template)
+
+        logger.debug("Committing changes to database.")
+        session.add(template)
+        session.commit()
 
         logger.debug("Returning template.")
         response.headers["Location"] = f"/api/v1/templates/{template.id}"

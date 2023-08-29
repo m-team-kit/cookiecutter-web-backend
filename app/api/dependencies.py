@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from flaat.exceptions import FlaatUnauthenticated
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import models, schemas
 
 logger = logging.getLogger(__name__)
 bearer_token = HTTPBearer(auto_error=False)
@@ -66,11 +66,12 @@ async def get_user(
         ) from err
 
     logger.debug("Getting user from database.")
-    user = crud.user.get(session, id=(token_info.subject, token_info.issuer))
+    user = session.get(models.User, (token_info.subject, token_info.issuer))
     if not user:  # If user not in the database, register it
         logger.debug("Creating user in database.")
-        user_data = schemas.UserCreate(subject=token_info.subject, issuer=token_info.issuer)
-        user = crud.user.create(session, obj_in=user_data)
+        user = models.User(subject=token_info.subject, issuer=token_info.issuer)
+        session.add(user)
+        session.commit()
 
     return user
 
