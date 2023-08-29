@@ -36,8 +36,10 @@ def read_templates(
     returns a pagination object with the templates.
     """
 
-    logger.info("Listing templates.")
-    search = session.query(models.Template)
+    logger.info("Listing templates with score average.")
+    search = session.query(models.Template, sa.func.avg(models.Score.value).label("score"))
+    search = search.outerjoin(models.Template.scores)
+    search = search.group_by(models.Template.id)
 
     try:
         logger.debug("Filtering templates by language: %s.", language)
@@ -60,8 +62,11 @@ def read_templates(
             search = search.group_by(models.Template.id)
             search = search.having(sa.func.count(models.Tag.id) == len(tags))
 
+        logger.debug("Ordering templates by score.")
+        search = search.order_by(sa.nullslast(sa.desc("score")))
+
         logger.debug("Returning templates.")
-        return search.all()
+        return [template for template, _ in search.all()]
 
     except Exception as err:  # TODO: Too broad exception
         logger.error("Error listing templates: %s", err)

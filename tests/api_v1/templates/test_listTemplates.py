@@ -21,6 +21,14 @@ def test_200_ok_all(response: Response) -> None:
     assert len(response.json()) == 4
 
 
+@pytest.mark.parametrize("query", [{}], indirect=True)
+def test_200_ok_order(response: Response) -> None:
+    """Tests the response status code is 200 and valid."""
+    # TODO: Add parametrization to select order
+    # !!!!!!
+    assert [x["score"] for x in response.json()] == [5.0, 4.5, None, None]
+
+
 @pytest.mark.parametrize("query", [{"language": "Python"}], indirect=True)
 def test_200_ok_message(response: Response, query: Dict) -> None:
     """Tests the response status code is 200 and valid."""
