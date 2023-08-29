@@ -18,7 +18,7 @@ from pytest_postgresql.janitor import DatabaseJanitor
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from app import create_app, crud
+from app import create_app, models
 from app.core import database
 
 
@@ -141,7 +141,7 @@ def template_uuid(request) -> UUID:
 def templates(response, session_generator):
     """Fixture to provide database templates after request."""
     with session_generator() as session:
-        templates = crud.template.get_multi(session, skip=0, limit=None)
+        templates = session.query(models.Template).all()
         yield {Path(t.repoFile).stem: t for t in templates}
 
 
