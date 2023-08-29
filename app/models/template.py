@@ -28,7 +28,7 @@ class Template(Base):
     gitCheckout: Mapped[str] = mapped_column()
     score = hybrid_property(utils.score_calculation)
     scores: Mapped[List["Score"]] = relationship(cascade="all, delete", passive_deletes=True)
-    _tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete", passive_deletes=True)
+    _tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete-orphan", passive_deletes=True)
 
     @property
     def tags(self) -> List[str]:
