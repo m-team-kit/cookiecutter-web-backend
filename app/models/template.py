@@ -54,7 +54,4 @@ class Score(Base):
     owner_subject: Mapped[str] = mapped_column()
     owner_issuer: Mapped[str] = mapped_column()
     owner_id = hybrid_property(lambda self: (self.owner_subject, self.owner_issuer))
-    __table_args__ = (
-        ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"], ondelete="CASCADE"),
-        {},
-    )
+    __table_args__ = (ForeignKeyConstraint(["owner_subject", "owner_issuer"], ["user.subject", "user.issuer"], ondelete="CASCADE"), {})

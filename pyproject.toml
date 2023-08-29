@@ -41,21 +41,21 @@ sqlalchemy-stubs = "~0.4"
 httpx = "~0.24.1"
 
 [tool.pylint]
-max-line-length=120
+max-line-length=150
 ignored-modules = ["alembic"]
 
 [tool.isort]
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
-line_length = 120
+line_length = 150
 
 [build-system]
 requires = ["poetry>=1.5.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-line-length = 120
+line-length = 150
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
