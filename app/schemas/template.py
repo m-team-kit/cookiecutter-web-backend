@@ -1,36 +1,10 @@
-from typing import Optional, Set
+from typing import Set
 from uuid import UUID
 
-from pydantic import BaseModel, validator
-
-from app import models
+from pydantic import BaseModel
 
 
-# Shared properties
-class TemplateBase(BaseModel):
-    repoFile: Optional[str] = None
-    title: Optional[str] = None
-    summary: Optional[str] = None
-    language: Optional[str] = None
-    tags: Set[str] = []
-    picture: Optional[str] = None
-    gitLink: Optional[str] = None
-    gitCheckout: Optional[str] = None
-    score: Optional[float] = None
-
-
-# Properties to receive on item creation
-class TemplateCreate(TemplateBase):
-    title: str
-
-
-# Properties to receive on item update
-class TemplateUpdate(TemplateBase):
-    pass
-
-
-# Properties shared by models stored in DB
-class TemplateInDBBase(TemplateBase):
+class Template(BaseModel, from_attributes=True):
     id: UUID
     repoFile: str
     title: str
@@ -41,16 +15,3 @@ class TemplateInDBBase(TemplateBase):
     gitLink: str
     gitCheckout: str
     score: float | None
-
-    class Config:
-        from_attributes = True
-
-
-# Properties to return to client
-class Template(TemplateInDBBase):
-    pass
-
-
-# Properties properties stored in DB
-class TemplateInDB(TemplateInDBBase):
-    pass
