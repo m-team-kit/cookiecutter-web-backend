@@ -75,7 +75,7 @@ def fetch_fields(
     status_code=status.HTTP_200_OK,
     response_class=FileResponse,
     responses={
-        status.HTTP_200_OK: {"content": {"application/zip": {}}},
+        status.HTTP_200_OK: {"content": {"application/zip": {"schema": {"type": "string", "format": "binary"}}}},
         status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
     },
