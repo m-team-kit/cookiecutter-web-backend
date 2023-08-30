@@ -4,11 +4,13 @@ from typing import List
 from uuid import UUID
 
 import sqlalchemy as sa
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app import models, schemas
-from app.api import dependencies as deps
+from app import dependencies as deps
+from app import models
+from app.api_v1 import parameters, schemas
+from app.types import SortBy
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -22,14 +24,15 @@ router = APIRouter()
     response_model=List[schemas.Template],
     responses={
         status.HTTP_200_OK: {"model": List[schemas.Template]},
-        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
+        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.ValidationError},
     },
 )
 def read_templates(
-    language: str = Query(default=None, description="Language of the template."),
-    tags: List[str] = Query(default=[], description="Tags of the template."),
-    keywords: List[str] = Query(default=[], description="Keywords of the template."),
     session: Session = Depends(deps.get_session),
+    language: str = parameters.language,
+    tags: List[str] = parameters.tags,
+    keywords: List[str] = parameters.keywords,
+    sort_by: SortBy = parameters.sort_by,
 ) -> List[models.Template]:
     """
     Use this method to get a list of available templates. The response
@@ -62,8 +65,12 @@ def read_templates(
             search = search.group_by(models.Template.id)
             search = search.having(sa.func.count(models.Tag.id) == len(tags))
 
-        logger.debug("Ordering templates by score.")
-        search = search.order_by(sa.nullslast(sa.desc("score")))
+        logger.debug("Sorting templates by: %s.", sort_by)
+        for sort in sort_by.split(","):
+            if sort[0] == "-":
+                search = search.order_by(sa.nullslast(sa.desc(sort[1:])))
+            else:
+                search = search.order_by(sa.nullslast(sa.asc(sort[1:])))
 
         logger.debug("Returning templates.")
         return [template for template, _ in search.all()]

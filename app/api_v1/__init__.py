@@ -8,7 +8,7 @@ Create your project from cookiecutter templates via web interface:
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import templates, project, database
+from app.api_v1.endpoints import templates, project, database
 
 api_router = APIRouter()
 api_router.include_router(templates.router, prefix="/templates", tags=["templates"])

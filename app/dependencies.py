@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from flaat.exceptions import FlaatUnauthenticated
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import models
 
 logger = logging.getLogger(__name__)
 bearer_token = HTTPBearer(auto_error=False)

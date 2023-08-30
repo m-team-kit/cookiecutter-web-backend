@@ -6,7 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 import app.core.authentication as auth
 import app.core.database as db
-from app import api
+from app import api_v1
 from app.config import Settings
 
 
@@ -36,16 +36,16 @@ def create_app(**custom_parameters) -> FastAPI:
     db.init_app(app)
 
     # Set "latest" api as mounted app
-    api_latests = FastAPI(description=api.v1.__doc__)
-    api_latests.state = app.state
-    app.mount("/api/latest", api_latests)
-    api_latests.include_router(api.v1.api_router)
+    _api_latests = FastAPI(description=api_v1.__doc__)
+    _api_latests.state = app.state
+    app.mount("/api/latest", _api_latests)
+    _api_latests.include_router(api_v1.api_router)
 
     # Set "v1" api as mounted app
-    api_v1 = FastAPI(description=api.v1.__doc__)
-    api_v1.state = app.state
-    app.mount("/api/v1", api_v1)
-    api_v1.include_router(api.v1.api_router)
+    _api_v1 = FastAPI(description=api_v1.__doc__)
+    _api_v1.state = app.state
+    app.mount("/api/v1", _api_v1)
+    _api_v1.include_router(api_v1.api_router)
 
     # Return FastAPI instance
     return app

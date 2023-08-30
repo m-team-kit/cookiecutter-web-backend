@@ -10,7 +10,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 from app import models
-from app.api import dependencies as deps
+from app import dependencies as deps
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
