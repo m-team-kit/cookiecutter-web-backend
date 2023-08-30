@@ -88,7 +88,7 @@ def read_templates(
     response_model=schemas.Template,
     responses={
         status.HTTP_200_OK: {"model": schemas.Template},
-        status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
+        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.GetError},
     },
 )
@@ -130,7 +130,7 @@ def read_template(
     responses={
         status.HTTP_200_OK: {"model": schemas.Template},
         status.HTTP_201_CREATED: {"model": schemas.Template},
-        status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
+        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.ScoreError},
     },
 )

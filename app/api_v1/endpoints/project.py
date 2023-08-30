@@ -13,8 +13,9 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from app import models
 from app import dependencies as deps
+from app import models
+from app.api_v1 import schemas
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -28,7 +29,7 @@ router = APIRouter()
     response_model=Dict[str, Any],
     responses={
         status.HTTP_200_OK: {"model": Dict[str, Any]},
-        status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
+        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
     },
 )
@@ -75,7 +76,7 @@ def fetch_fields(
     response_class=FileResponse,
     responses={
         status.HTTP_200_OK: {"content": {"application/zip": {}}},
-        status.HTTP_404_NOT_FOUND: {"description": "Template not found"},
+        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
         # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
     },
 )

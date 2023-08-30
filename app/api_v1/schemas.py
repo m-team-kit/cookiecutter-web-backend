@@ -15,3 +15,7 @@ class Template(BaseModel, from_attributes=True):
     gitLink: str
     gitCheckout: str
     score: float | None
+
+
+class NotFound(BaseModel):
+    detail: str = "Template not found."
