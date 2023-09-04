@@ -58,11 +58,12 @@ async def get_user(
             raise FlaatUnauthenticated("Not authenticated")
 
     except FlaatUnauthenticated as err:
-        logger.debug("Not authenticated.")
+        logger.debug("Authentication error: %s", err)
+        info = {"type": "authentication", "loc": ["header", "bearer"], "msg": err.args[0]}
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
+            detail=[info],
         ) from err
 
     logger.debug("Getting user from database.")
@@ -94,17 +95,21 @@ async def check_secret(
             raise ValueError("Incorrect secret")
 
     except KeyError as err:
+        logger.debug("Authentication error: %s", err)
+        info = {"type": "authentication", "loc": ["header", "bearer"], "msg": err.args[0]}
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=err.args[0],
             headers={"WWW-Authenticate": "Bearer"},
+            detail=[info],
         ) from err
 
     except ValueError as err:
+        logger.debug("Authorization error: %s", err)
+        info = {"type": "authentication", "loc": ["header", "bearer"], "msg": err.args[0]}
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=err.args[0],
             headers={"WWW-Authenticate": "Bearer"},
+            detail=[info],
         ) from err
 
     return None

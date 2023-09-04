@@ -1,4 +1,4 @@
-from fastapi import Query
+from fastapi import Query, Path
 
 language = Query(
     title="Language",
@@ -29,4 +29,10 @@ sort_by = Query(
     description="Order to return the results (comma separated). Generic fields are ['±id', '±score', '±title', '±language'].",
     default="-score",
     json_schema_extra={"type": "string", "example": "+title,-score"},
+)
+
+
+template_uuid = Path(
+    title="Template UUID",
+    description="UUID of the template to be used for generating a new software project.",
 )

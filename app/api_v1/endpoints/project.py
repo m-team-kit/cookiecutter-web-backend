@@ -1,11 +1,9 @@
 # pylint: disable=unused-argument
-import io
 import json
 import logging
 import shutil
 import tempfile
 import urllib.request
-from typing import Any, Dict
 from uuid import UUID
 
 from cookiecutter.main import cookiecutter
@@ -14,8 +12,8 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app import dependencies as deps
-from app import models
-from app.api_v1 import schemas
+from app import models, utils
+from app.api_v1 import parameters, schemas
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -25,19 +23,36 @@ router = APIRouter()
     summary="(Public) Fetches fields of the cookiecutter template.",
     operation_id="fetchFields",
     path="/{uuid}",
-    status_code=status.HTTP_200_OK,
-    response_model=Dict[str, Any],
     responses={
-        status.HTTP_200_OK: {"model": Dict[str, Any]},
-        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
-        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
+        status.HTTP_200_OK: {
+            "description": "Fields Fetched Successfully",
+            "model": schemas.CutterForm,
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Template Not Found",
+            "model": schemas.NotFound,
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "description": "Unprocessable Content",
+            "model": schemas.Unprocessable,
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Internal Server Error",
+            "model": schemas.ServerError,
+        },
+        status.HTTP_501_NOT_IMPLEMENTED: {
+            "description": "Not Implemented Error",
+            "model": schemas.NotImplemented,
+        },
     },
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.CutterForm,
 )
-def fetch_fields(
+async def fetch_fields(
     *,
     session: Session = Depends(deps.get_session),
-    uuid: UUID,
-) -> Dict[str, Any]:
+    uuid: UUID = parameters.template_uuid,
+) -> list[dict]:
     """
     Use this method to fetch fields of the cookiecutter template to build the
     web form.
@@ -56,36 +71,64 @@ def fetch_fields(
         url = f"{template.gitLink}/raw/{template.gitCheckout}/cookiecutter.json"
         req = urllib.request.Request(url)
 
-        logger.debug("Returning cookiecutter.json file.")
-        return json.load(urllib.request.urlopen(req))
+        logger.debug("Load and parse request into json, %s.", req)
+        with urllib.request.urlopen(req) as response:
+            data = json.load(response)
+
+        logger.debug("Returning CutterForm dict from json")
+        return utils.parse_fields(data)
 
     except KeyError as err:
         logger.debug("Template %s not found: %s", uuid, err)
-        raise HTTPException(status_code=404, detail=err.args[0]) from err
+        info = {"type": "not_found", "loc": ["path", "uuid"], "msg": err.args[0]}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=[info]) from err
 
-    except Exception as err:  # TODO: Too broad exception
+    except NotImplementedError as err:
+        logger.debug("Field type not supported: %s", err)
+        info = {"type": "not_implemented", "loc": ["gitLink", "gitCheckout", "cookiecutter.json"], "msg": err.args[0]}
+        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=[info]) from err
+
+    except Exception as err:
         logger.error("Error getting template %s: %s", uuid, err)
-        raise HTTPException("Server error") from err
+        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
 
 
 @router.post(
     summary="(User) Generate software project from the template.",
     operation_id="generateProject",
     path="/{uuid}:generate",
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Project Generated Successfully",
+            "content": {"application/zip": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Not authenticated",
+            "model": schemas.Unauthorized,
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Template Not Found",
+            "model": schemas.NotFound,
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "description": "Unprocessable Content",
+            "model": schemas.Unprocessable,
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Internal Server Error",
+            "model": schemas.ServerError,
+        },
+    },
     status_code=status.HTTP_200_OK,
     response_class=FileResponse,
-    responses={
-        status.HTTP_200_OK: {"content": {"application/zip": {"schema": {"type": "string", "format": "binary"}}}},
-        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
-        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.SearchError},
-    },
 )
-def generate_project(
+async def generate_project(
     *,
     session: Session = Depends(deps.get_session),
     tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
-    uuid: UUID,
-    options_in: Dict[str, str] = Body(),
+    uuid: UUID = parameters.template_uuid,
+    options_in: dict[str, str] = Body(),
     current_user: models.User = Depends(deps.get_user),
 ) -> FileResponse:
     """
@@ -119,8 +162,10 @@ def generate_project(
 
     except KeyError as err:
         logger.debug("Template %s not found: %s", uuid, err)
-        raise HTTPException(status_code=404, detail=err.args[0]) from err
+        info = {"type": "not_found", "loc": ["path", "uuid"], "msg": err.args[0]}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=[info]) from err
 
-    except Exception as err:  # TODO: Too broad exception
+    except Exception as err:
         logger.error("Error getting template %s: %s", uuid, err)
-        raise HTTPException("Server error") from err
+        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err

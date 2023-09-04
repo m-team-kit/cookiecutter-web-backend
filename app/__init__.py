@@ -1,7 +1,10 @@
 """Description to be changed later at:
     - backend/app/__main__.py
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
 import app.core.authentication as auth
@@ -20,6 +23,7 @@ def create_app(**custom_parameters) -> FastAPI:
     app.title = app.state.settings.project_name
     app.description = __doc__
     app.openapi_url = "/api/openapi.json"
+    app.separate_input_output_schemas = False
 
     # Set all CORS enabled origins
     origins = [str(origin) for origin in app.state.settings.cors_origins]
@@ -37,17 +41,32 @@ def create_app(**custom_parameters) -> FastAPI:
     email.init_app(app)
     db.init_app(app)
 
-    # Set "latest" api as mounted app
-    _api_latests = FastAPI(description=api_v1.__doc__)
-    _api_latests.state = app.state
-    app.mount("/api/latest", _api_latests)
-    _api_latests.include_router(api_v1.api_router)
+    # Mount API versions to the main app
+    mount_api(api_v1, app, "/api/latest")
+    mount_api(api_v1, app, "/api/v1")
 
-    # Set "v1" api as mounted app
-    _api_v1 = FastAPI(description=api_v1.__doc__)
-    _api_v1.state = app.state
-    app.mount("/api/v1", _api_v1)
-    _api_v1.include_router(api_v1.api_router)
+    # Favicon route
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon():
+        return FileResponse(f"{__file__}/../favicon.ico")
 
     # Return FastAPI instance
     return app
+
+
+def mount_api(package, app: FastAPI, prefix: str) -> None:
+    """Mount an API to the main app."""
+    api = FastAPI(description=package.__doc__)
+    # api.openapi_version = package.OPENAPI_VERSION
+    # api.exception_handler(RequestValidationError)(validation_exception_handler)
+    api.separate_input_output_schemas = False
+    api.state = app.state
+    app.mount(prefix, api)
+    api.include_router(package.api_router)
+
+
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
+    )

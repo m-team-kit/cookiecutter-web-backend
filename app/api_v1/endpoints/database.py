@@ -9,8 +9,9 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
-from app import models
 from app import dependencies as deps
+from app import models
+from app.api_v1 import schemas
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -20,13 +21,28 @@ router = APIRouter()
     summary="(Admin) Creates local database.",
     operation_id="createDB",
     path=":create",
-    status_code=status.HTTP_204_NO_CONTENT,
     responses={
-        status.HTTP_204_NO_CONTENT: {"description": "Database created."},
-        status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Server error."},
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Database Created Successfully",
+            "model": None,
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Not Authenticated",
+            "model": schemas.Unauthorized,
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "description": "Not Authorized",
+            "model": schemas.Forbidden,
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Internal Server Error",
+            "model": schemas.ServerError,
+        },
     },
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
 )
-def create_database(
+async def create_database(
     request: Request,
     tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
     valid_secret: models.User = Depends(deps.check_secret),
@@ -54,27 +70,43 @@ def create_database(
 
         logger.debug("Creating templates from json files.")
         for path in pathlib.Path(tempdir).glob("*.json"):
-            create_template(session, path)
+            _create_template(session, path)
 
         logger.debug("Committing changes to database.")
         session.commit()
 
-    except Exception as err:  # TODO: Too generic exception
+    except Exception as err:
         logger.error("Error creating local database: %s", err)
-        raise HTTPException("Server error") from err
+        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
 
 
 @router.post(
     summary="(Admin) Updates local database.",
     operation_id="updateDB",
     path=":update",
-    status_code=status.HTTP_204_NO_CONTENT,
     responses={
-        status.HTTP_204_NO_CONTENT: {"description": "Database updated."},
-        status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Server error."},
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Database Updated Successfully",
+            "model": None,
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Not Authenticated",
+            "model": schemas.Unauthorized,
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "description": "Not Authorized",
+            "model": schemas.Forbidden,
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Internal Server Error",
+            "model": schemas.ServerError,
+        },
     },
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
 )
-def update_database(
+async def update_database(
     request: Request,
     tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
     valid_secret: models.User = Depends(deps.check_secret),
@@ -112,22 +144,23 @@ def update_database(
         logger.debug("Creating templates from json files.")
         to_create = set(repo_files) - set(temp_files)
         for repo_file in [x for x in repo_files if x in to_create]:
-            create_template(session, pathlib.Path(tempdir) / repo_file)
+            _create_template(session, pathlib.Path(tempdir) / repo_file)
 
         logger.debug("Updating templates from json files.")
         to_update = set(temp_files) - set(to_delete)
         for template in [x for x in templates if x.repoFile in to_update]:
-            update_template(session, template, pathlib.Path(tempdir))
+            _update_template(session, template, pathlib.Path(tempdir))
 
         logger.debug("Committing changes to database.")
         session.commit()
 
-    except Exception as err:  # TODO: Too generic exception
+    except Exception as err:
         logger.error("Error updating local database: %s", err)
-        raise HTTPException("Server error") from err
+        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
 
 
-def create_template(session: Session, repo_file: pathlib.Path) -> None:
+def _create_template(session: Session, repo_file: pathlib.Path) -> None:
     logger.debug("Opening template file for %s.", repo_file)
     with open(repo_file, "r", encoding="utf-8") as file:
         template_kwds = json.load(file)
@@ -136,7 +169,7 @@ def create_template(session: Session, repo_file: pathlib.Path) -> None:
         session.add(models.Template(**template_kwds))
 
 
-def update_template(session: Session, template: models.Template, dir: pathlib.Path) -> None:
+def _update_template(session: Session, template: models.Template, dir: pathlib.Path) -> None:
     logger.debug("Opening template file for %s.", template.repoFile)
     with open(dir / template.repoFile, "r", encoding="utf-8") as file:
         template_kwds = json.load(file)

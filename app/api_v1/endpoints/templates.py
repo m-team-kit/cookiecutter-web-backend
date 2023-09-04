@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app import dependencies as deps
 from app import models
 from app.api_v1 import parameters, schemas
-from app.types import SortBy
+from app.api_v1.schemas import SortBy
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -20,31 +20,42 @@ router = APIRouter()
     summary="(Public) Lists available templates.",
     operation_id="listTemplates",
     path="/",
-    status_code=status.HTTP_200_OK,
-    response_model=List[schemas.Template],
     responses={
-        status.HTTP_200_OK: {"model": List[schemas.Template]},
-        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.ValidationError},
+        status.HTTP_200_OK: {
+            "description": "Templates Retrieved Successfully",
+            "model": schemas.Templates,
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "description": "Unprocessable Content",
+            "model": schemas.Unprocessable,
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Internal Server Error",
+            "model": schemas.ServerError,
+        },
     },
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.Templates,
 )
-def read_templates(
+async def read_templates(
     session: Session = Depends(deps.get_session),
     language: str = parameters.language,
     tags: List[str] = parameters.tags,
     keywords: List[str] = parameters.keywords,
     sort_by: SortBy = parameters.sort_by,
-) -> List[models.Template]:
+) -> schemas.Templates:
     """
     Use this method to get a list of available templates. The response
     returns a pagination object with the templates.
     """
 
     logger.info("Listing templates with score average.")
-    search = session.query(models.Template, sa.func.avg(models.Score.value).label("score"))
-    search = search.outerjoin(models.Template.scores)
-    search = search.group_by(models.Template.id)
-
     try:
+        logger.debug("Querying templates with score average.")
+        search = session.query(models.Template, sa.func.avg(models.Score.value).label("score"))
+        search = search.outerjoin(models.Template.scores)
+        search = search.group_by(models.Template.id)
+
         logger.debug("Filtering templates by language: %s.", language)
         if language:
             search = search.filter(models.Template.language == language)
@@ -75,27 +86,41 @@ def read_templates(
         logger.debug("Returning templates.")
         return [template for template, _ in search.all()]
 
-    except Exception as err:  # TODO: Too broad exception
+    except Exception as err:
         logger.error("Error listing templates: %s", err)
-        raise HTTPException("Server error") from err
+        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
 
 
 @router.get(
     summary="(Public) Finds template by UUID and shows its details.",
     operation_id="getTemplate",
     path="/{uuid}",
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Template Retrieved Successfully",
+            "model": schemas.Template,
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Template Not Found",
+            "model": schemas.NotFound,
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "description": "Unprocessable Content",
+            "model": schemas.Unprocessable,
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Internal Server Error",
+            "model": schemas.ServerError,
+        },
+    },
     status_code=status.HTTP_200_OK,
     response_model=schemas.Template,
-    responses={
-        status.HTTP_200_OK: {"model": schemas.Template},
-        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
-        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.GetError},
-    },
 )
-def read_template(
-    uuid: UUID,
+async def read_template(
+    uuid: UUID = parameters.template_uuid,
     session: Session = Depends(deps.get_session),
-) -> models.Template:
+) -> schemas.Template:
     """
     Use this method to retrieve details about the specific template.
     """
@@ -105,42 +130,60 @@ def read_template(
         logger.debug("Fetching template with id: %s.", uuid)
         template = session.get(models.Template, uuid)
 
-        logger.debug("Checking if template exists.")
+        logger.debug("Checking if template exists")
         if not template:
             raise KeyError("Template not found")
 
-        logger.debug("Returning template.")
+        logger.debug("Returning template")
         return template
 
     except KeyError as err:
         logger.debug("Template %s not found: %s", uuid, err)
-        raise HTTPException(status_code=404, detail=err.args[0]) from err
+        info = {"type": "not_found", "loc": ["path", "uuid"], "msg": err.args[0]}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=[info]) from err
 
-    except Exception as err:  # TODO: Too broad exception
+    except Exception as err:
         logger.error("Error getting template %s: %s", uuid, err)
-        raise HTTPException("Server error") from err
+        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
 
 
 @router.put(
     summary="(User) Rates specific template.",
     operation_id="rateTemplate",
     path="/{uuid}/score",
+    responses={
+        status.HTTP_200_OK: {
+            "description": "Template Rated Successfully",
+            "model": schemas.Template,
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Not Authenticated",
+            "model": schemas.Unauthorized,
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Template Not Found",
+            "model": schemas.NotFound,
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "description": "Unprocessable Content",
+            "model": schemas.Unprocessable,
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Internal Server Error",
+            "model": schemas.ServerError,
+        },
+    },
     status_code=status.HTTP_200_OK,
     response_model=schemas.Template,
-    responses={
-        status.HTTP_200_OK: {"model": schemas.Template},
-        status.HTTP_201_CREATED: {"model": schemas.Template},
-        status.HTTP_404_NOT_FOUND: {"model": schemas.NotFound},
-        # status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": schemas.ScoreError},
-    },
 )
-def rate_template(
+async def rate_template(
     response: Response,
-    uuid: UUID,
+    uuid: UUID = parameters.template_uuid,
     score: float = Body(),
     current_user: models.User = Depends(deps.get_user),
     session: Session = Depends(deps.get_session),
-) -> models.Template:
+) -> schemas.Template:
     """
     Use this method to update the score/rating of the specific template.
     """
@@ -180,8 +223,10 @@ def rate_template(
 
     except KeyError as err:
         logger.debug("Template %s not found: %s", uuid, err)
-        raise HTTPException(status_code=404, detail=err.args[0]) from err
+        info = {"type": "not_found", "loc": ["path", "uuid"], "msg": err.args[0]}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=[info]) from err
 
-    except Exception as err:  # TODO: Too broad exception
-        logger.error("Error rating template %s: %s", uuid, err)
-        raise HTTPException("Server error") from err
+    except Exception as err:
+        logger.error("Error getting template %s: %s", uuid, err)
+        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
