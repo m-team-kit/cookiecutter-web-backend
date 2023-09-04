@@ -16,6 +16,8 @@ def response(client: TestClient, headers: Dict) -> None:
     return response
 
 
+@pytest.mark.usefixtures("patch_repository")
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
 def test_204_no_content(response: Response, templates: List[Template]) -> None:
     """Tests the response status code is 204 and valid."""
@@ -42,6 +44,8 @@ def test_204_no_content(response: Response, templates: List[Template]) -> None:
     assert templates["my_template_5"].score is None
 
 
+@pytest.mark.usefixtures("patch_repository")
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("headers", [{}], indirect=True)
 def test_401_unauthorized(response: Response) -> None:
     """Tests the response status code is 401 and valid."""
@@ -51,9 +55,13 @@ def test_401_unauthorized(response: Response) -> None:
     assert response.headers["WWW-Authenticate"] == "Bearer"
     # Assert message is valid
     message = response.json()
-    assert message == {"detail": "Not authenticated"}
+    assert message["detail"][0]["type"] == "authentication"
+    assert message["detail"][0]["loc"] == ["header", "bearer"]
+    assert "Not authenticated" in message["detail"][0]["msg"]
 
 
+@pytest.mark.usefixtures("patch_repository")
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer bad-secret"}], indirect=True)
 def test_403_forbidden(response: Response) -> None:
     """Tests the response status code is 403 and valid."""
@@ -61,4 +69,20 @@ def test_403_forbidden(response: Response) -> None:
     assert response.status_code == 403
     # Assert message is valid
     message = response.json()
-    assert message == {"detail": "Incorrect secret"}
+    assert message["detail"][0]["type"] == "authentication"
+    assert message["detail"][0]["loc"] == ["header", "bearer"]
+    assert "Incorrect secret" in message["detail"][0]["msg"]
+
+
+@pytest.mark.usefixtures("patch_repository")
+@pytest.mark.parametrize("patch_repository", ["repository_down"], indirect=True)
+@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
+def test_500_server_error(response: Response) -> None:
+    """Tests the response status code is 500 and valid.""" ""
+    # Assert response is valid
+    assert response.status_code == 500
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "server_error"
+    assert message["detail"][0]["loc"] == []
+    assert message["detail"][0]["msg"] == "Internal Server Error"

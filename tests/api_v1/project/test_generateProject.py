@@ -2,6 +2,7 @@
 from typing import Any, Dict
 import zipfile
 import io
+import tomllib
 
 import pytest
 from fastapi import Response
@@ -15,8 +16,10 @@ def response(client: TestClient, template_uuid: str, headers: Dict, body: Dict) 
     return response
 
 
+@pytest.mark.usefixtures("patch_cookiecutter")
+@pytest.mark.parametrize("patch_cookiecutter", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-@pytest.mark.parametrize("body", [{"directory_name": "my_project"}], indirect=True)
+@pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
 def test_200_ok(response: Response, body: Dict[str, Any]) -> None:
     """Tests the response status code is 200 and valid."""
@@ -25,15 +28,21 @@ def test_200_ok(response: Response, body: Dict[str, Any]) -> None:
     # Assert header is valid
     assert response.headers["content-type"] == "application/zip"
     # Assert template in response is valid
+    sub_folder = f"{body['text_field'].lower().replace(' ', '_')}_project"
     zip_buffer = io.BytesIO(response.content)
-    directory_name = body.get("directory_name", "Hello")
-    file_name = body.get("file_name", "Howdy")
-    with zipfile.ZipFile(zip_buffer, "r", zipfile.ZIP_DEFLATED, False) as zip_ref:
-        assert zip_ref.namelist() == [f"{directory_name}/", f"{directory_name}/{file_name}.py"]
+    with zipfile.ZipFile(zip_buffer, "r", zipfile.ZIP_DEFLATED, False) as archive:
+        with archive.open(f"{sub_folder}/template_file.toml") as file:
+            config = tomllib.load(file)
+    assert config["text_field"] == body["text_field"]
+    assert config["composed_var"] == body["text_field"].lower().replace(" ", "_")
+    assert config["checkbox_field"] == "True"
+    assert config["select_field"] == "option_1"
+    assert config["no_prompt_var"] == "Some text"
+    assert config["private_var"] == "This variable will not be rendered"
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-@pytest.mark.parametrize("body", [{"directory_name": "my_project"}], indirect=True)
+@pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer bad-token"}, {}], indirect=True)
 def test_401_unauthorized(response: Response) -> None:
     """Tests the response status code is 401 and valid."""
@@ -43,11 +52,13 @@ def test_401_unauthorized(response: Response) -> None:
     assert response.headers["WWW-Authenticate"] == "Bearer"
     # Assert message is valid
     message = response.json()
-    assert message == {"detail": "Not authenticated"}
+    assert message["detail"][0]["type"] == "authentication"
+    assert message["detail"][0]["loc"] == ["header", "bearer"]
+    assert "Not authenticated" in message["detail"][0]["msg"]
 
 
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)
-@pytest.mark.parametrize("body", [{"directory_name": "my_project"}], indirect=True)
+@pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
 def test_404_not_found(response: Response) -> None:
     """Tests the response status code is 404 and valid."""
@@ -55,11 +66,13 @@ def test_404_not_found(response: Response) -> None:
     assert response.status_code == 404
     # Assert message is valid
     message = response.json()
-    assert message == {"detail": "Template not found"}
+    assert message["detail"][0]["type"] == "not_found"
+    assert message["detail"][0]["loc"] == ["path", "uuid"]
+    assert "Template not found" in message["detail"][0]["msg"]
 
 
 @pytest.mark.parametrize("template_uuid", ["bad_uuid"], indirect=True)
-@pytest.mark.parametrize("body", [{"directory_name": "my_project"}], indirect=True)
+@pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
 @pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
 def test_422_validation_error(response: Response) -> None:
     """Tests the response status code is 422 and valid."""
@@ -70,4 +83,18 @@ def test_422_validation_error(response: Response) -> None:
     assert message["detail"][0]["type"] == "uuid_parsing"
     assert message["detail"][0]["loc"] == ["path", "uuid"]
     assert "Input should be a valid UUID" in message["detail"][0]["msg"]
-    assert message["detail"][0]["input"] == "bad_uuid"
+
+
+@pytest.mark.usefixtures("patch_cookiecutter")
+@pytest.mark.parametrize("patch_cookiecutter", ["repository_down"], indirect=True)
+@pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
+@pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
+def test_500_server_error(response: Response) -> None:
+    """Tests the response status code is 500 and valid.""" ""
+    # Assert response is valid
+    assert response.status_code == 500
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "server_error"
+    assert message["detail"][0]["loc"] == []
+    assert message["detail"][0]["msg"] == "Internal Server Error"

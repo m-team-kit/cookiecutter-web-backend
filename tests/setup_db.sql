@@ -12,10 +12,10 @@ VALUES
 INSERT INTO public."template"
     ("id", "created", "modified", "repoFile", "title", "summary", "language", "picture", "gitLink", "gitCheckout")
 VALUES
-    ('bced037a-a326-425d-aa03-5d3cbc9aa3d1',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_1.json',	'HelloCookieCutter1',	'Cookiecutter basics',	'Python',	'https://picture-url/template_1',	'https://github.com/BruceEckel/HelloCookieCutter1',	'master'),
-    ('ef231acb-0ff9-4391-ab18-6cb2698b0985',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_2.json',	'My Template 2',	'Template example 2',	'Python',	'https://picture-url/template_2',	'https://some-git-link/template_2',	'main'),
-    ('8fc20f81-e0a9-471c-8008-697ce799e73b',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_3.json',	'My Template 3',	'Template example 3',	'Python',	'https://picture-url/template_3',	'https://some-git-link/template_3',	'main'),
-    ('f3f35224-e35c-46a4-90d1-354646970b13',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_4.json',	'My Template 4',	'Template example 4',	'Python',	'https://picture-url/template_4',	'https://some-git-link/template_4',	'main');
+    ('bced037a-a326-425d-aa03-5d3cbc9aa3d1',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_1.json',	'My Template 1',	'Tests Cookiecutter',	'Python',	'https://picture-url/template',	'https://link-to-be-patched',	'main'),
+    ('ef231acb-0ff9-4391-ab18-6cb2698b0985',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_2.json',	'My Template 2',	'Basic Cookiecutter',	'Python',	'https://picture-url/template',	'https://github.com/BruceEckel/HelloCookieCutter1',	'master'),
+    ('8fc20f81-e0a9-471c-8008-697ce799e73b',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_3.json',	'My Template 3',	'Template example 3',	'Python',	'https://picture-url/template',	'https://some-git-link/template',	'main'),
+    ('f3f35224-e35c-46a4-90d1-354646970b13',	'2000-01-01 00:00:00.000',	'2020-01-01 00:00:000',	'my_template_4.json',	'My Template 4',	'Template example 4',	'Python',	'https://picture-url/template',	'https://some-git-link/template',	'main');
 
 
 -- Data for Name: tag; Type: TABLE DATA; Schema: public
@@ -34,4 +34,4 @@ INSERT INTO public."score"
 VALUES
     ('fbd43094-2e38-4cb8-a2ac-043950016168',  '2000-01-01 00:00:00.000',  '2000-01-01 00:00:00.000',  'bced037a-a326-425d-aa03-5d3cbc9aa3d1',  5.0,  'user_1',  'issuer_1'),
     ('19f312d5-2947-4c6f-8fa0-27c77173cfa4',  '2000-01-01 00:00:00.000',  '2000-01-01 00:00:00.000',  'bced037a-a326-425d-aa03-5d3cbc9aa3d1',  4.0,  'user_2',  'issuer_1'),
-    ('3b560633-110a-453d-9345-0781126e76bf',  '2000-01-01 00:00:00.000',  '2000-01-01 00:00:00.000',  'ef231acb-0ff9-4391-ab18-6cb2698b0985',  5.0,  'user_1',  'issuer_1');
+    ('3b560633-110a-453d-9345-0781126e76bf',  '2000-01-01 00:00:00.000',  '2000-01-01 00:00:00.000',  'f3f35224-e35c-46a4-90d1-354646970b13',  5.0,  'user_1',  'issuer_1');

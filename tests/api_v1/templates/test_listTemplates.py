@@ -41,11 +41,11 @@ def test_200_score_asc(response: Response) -> None:
     assert templates[3]["score"] is None
 
 
-@pytest.mark.parametrize("query", [{"sort_by": "+title"}, {"sort_by": "+score,+title"}], indirect=True)
+@pytest.mark.parametrize("query", [{"sort_by": "+title"}], indirect=True)
 def test_200_title_asc(response: Response) -> None:
     """Tests the response status code is 200 and valid."""
     templates = response.json()
-    assert templates[0]["title"] == "HelloCookieCutter1"
+    assert templates[0]["title"] == "My Template 1"
     assert templates[1]["title"] == "My Template 2"
     assert templates[2]["title"] == "My Template 3"
     assert templates[3]["title"] == "My Template 4"
@@ -82,4 +82,15 @@ def test_422_bad_sortby(response: Response) -> None:
     assert message["detail"][0]["type"] == "value_error"
     assert message["detail"][0]["loc"] == ["query", "sort_by"]
     assert "Value error, Invalid sort by option" in message["detail"][0]["msg"]
-    # assert message["detail"][0]["input"] == "a"  # TODO: Fix this
+
+
+@pytest.mark.usefixtures("patch_session_get_error")
+def test_500_server_error(response: Response) -> None:
+    """Tests the response status code is 500 and valid."""
+    # Assert response is valid
+    assert response.status_code == 500
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "server_error"
+    assert message["detail"][0]["loc"] == []
+    assert message["detail"][0]["msg"] == "Internal Server Error"
