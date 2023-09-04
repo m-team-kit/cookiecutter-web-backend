@@ -55,30 +55,23 @@ async def create_database(
     # pylint: disable=consider-using-with
 
     logger.info("Creating local database.")
+    logger.debug("Cloning repository at %s.", tempdir)
+    git.Repo.clone_from(
+        url=f"{request.app.state.settings.repository_url}",
+        to_path=tempdir,
+        branch="main",
+        depth=1,
+    )
 
-    try:
-        logger.debug("Cloning repository at %s.", tempdir)
-        git.Repo.clone_from(
-            url=f"{request.app.state.settings.repository_url}",
-            to_path=tempdir,
-            branch="main",
-            depth=1,
-        )
+    logger.debug("Deleting all templates from database.")
+    session.query(models.Template).delete()
 
-        logger.debug("Deleting all templates from database.")
-        session.query(models.Template).delete()
+    logger.debug("Creating templates from json files.")
+    for path in pathlib.Path(tempdir).glob("*.json"):
+        _create_template(session, path)
 
-        logger.debug("Creating templates from json files.")
-        for path in pathlib.Path(tempdir).glob("*.json"):
-            _create_template(session, path)
-
-        logger.debug("Committing changes to database.")
-        session.commit()
-
-    except Exception as err:
-        logger.error("Error creating local database: %s", err)
-        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
+    logger.debug("Committing changes to database.")
+    session.commit()
 
 
 @router.post(
@@ -119,45 +112,38 @@ async def update_database(
     # pylint: disable=consider-using-with
 
     logger.info("Creating local database.")
+    logger.debug("Cloning repository at %s.", tempdir)
+    git.Repo.clone_from(
+        url=f"{request.app.state.settings.repository_url}",
+        to_path=tempdir,
+        branch="main",
+        depth=1,
+    )
 
-    try:
-        logger.debug("Cloning repository at %s.", tempdir)
-        git.Repo.clone_from(
-            url=f"{request.app.state.settings.repository_url}",
-            to_path=tempdir,
-            branch="main",
-            depth=1,
-        )
+    logger.debug("Collect all templates from database.")
+    templates = session.query(models.Template).all()
+    temp_files = [x.repoFile for x in templates]
 
-        logger.debug("Collect all templates from database.")
-        templates = session.query(models.Template).all()
-        temp_files = [x.repoFile for x in templates]
+    logger.debug("Collecting all json from repository.")
+    repo_files = [x.name for x in pathlib.Path(tempdir).glob("*.json")]
 
-        logger.debug("Collecting all json from repository.")
-        repo_files = [x.name for x in pathlib.Path(tempdir).glob("*.json")]
+    logger.debug("Delete difference between database and repository.")
+    to_delete = set(temp_files) - set(repo_files)
+    for template in [x for x in templates if x.repoFile in to_delete]:
+        session.delete(template)
 
-        logger.debug("Delete difference between database and repository.")
-        to_delete = set(temp_files) - set(repo_files)
-        for template in [x for x in templates if x.repoFile in to_delete]:
-            session.delete(template)
+    logger.debug("Creating templates from json files.")
+    to_create = set(repo_files) - set(temp_files)
+    for repo_file in [x for x in repo_files if x in to_create]:
+        _create_template(session, pathlib.Path(tempdir) / repo_file)
 
-        logger.debug("Creating templates from json files.")
-        to_create = set(repo_files) - set(temp_files)
-        for repo_file in [x for x in repo_files if x in to_create]:
-            _create_template(session, pathlib.Path(tempdir) / repo_file)
+    logger.debug("Updating templates from json files.")
+    to_update = set(temp_files) - set(to_delete)
+    for template in [x for x in templates if x.repoFile in to_update]:
+        _update_template(session, template, pathlib.Path(tempdir))
 
-        logger.debug("Updating templates from json files.")
-        to_update = set(temp_files) - set(to_delete)
-        for template in [x for x in templates if x.repoFile in to_update]:
-            _update_template(session, template, pathlib.Path(tempdir))
-
-        logger.debug("Committing changes to database.")
-        session.commit()
-
-    except Exception as err:
-        logger.error("Error updating local database: %s", err)
-        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
+    logger.debug("Committing changes to database.")
+    session.commit()
 
 
 def _create_template(session: Session, repo_file: pathlib.Path) -> None:

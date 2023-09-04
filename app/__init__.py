@@ -63,6 +63,7 @@ def mount_api(package, app: FastAPI, prefix: str) -> None:
     api.state = app.state
     app.mount(prefix, api)
     api.include_router(package.api_router)
+    package.add_exception_handlers(api)
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

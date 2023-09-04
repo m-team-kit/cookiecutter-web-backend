@@ -2,9 +2,9 @@ import logging
 import tempfile
 from typing import Generator
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from flaat.exceptions import FlaatUnauthenticated
+from flaat.exceptions import FlaatForbidden, FlaatUnauthenticated
 from sqlalchemy.orm import Session
 
 from app import models
@@ -45,26 +45,16 @@ async def get_user(
 ) -> models.User:
     """Returns user from token."""
 
-    try:
-        logger.debug("If no token present raise Unauthenticated.")
-        if not token:
-            raise FlaatUnauthenticated("Not authenticated")
+    logger.debug("If no token present raise Unauthenticated.")
+    if not token:
+        raise FlaatUnauthenticated("Not authenticated")
 
-        logger.debug("Getting user from token. %s", token.credentials)
-        token_info = request.app.state.flaat.get_user_infos_from_access_token(token.credentials)
+    logger.debug("Getting user from token. %s", token.credentials)
+    token_info = request.app.state.flaat.get_user_infos_from_access_token(token.credentials)
 
-        logger.debug("Checking if token is valid.")
-        if not token_info:
-            raise FlaatUnauthenticated("Not authenticated")
-
-    except FlaatUnauthenticated as err:
-        logger.debug("Authentication error: %s", err)
-        info = {"type": "authentication", "loc": ["header", "bearer"], "msg": err.args[0]}
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "Bearer"},
-            detail=[info],
-        ) from err
+    logger.debug("Checking if token is valid.")
+    if not token_info:
+        raise FlaatUnauthenticated("Not authenticated")
 
     logger.debug("Getting user from database.")
     user = session.get(models.User, (token_info.subject, token_info.issuer))
@@ -83,33 +73,12 @@ async def check_secret(
 ) -> None:
     """Checks if secret is correct."""
 
-    try:
-        logger.debug("If no secret present raise ValueError.")
-        if not secret:
-            raise KeyError("Not authenticated")
+    logger.debug("If no secret present raise ValueError.")
+    if not secret:
+        raise FlaatUnauthenticated("Not authenticated")
 
-        logger.debug("Checking secret.")
-        correct = request.app.state.settings.secret == secret.credentials
-        if not correct:
-            logger.debug("Incorrect secret.")
-            raise ValueError("Incorrect secret")
-
-    except KeyError as err:
-        logger.debug("Authentication error: %s", err)
-        info = {"type": "authentication", "loc": ["header", "bearer"], "msg": err.args[0]}
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "Bearer"},
-            detail=[info],
-        ) from err
-
-    except ValueError as err:
-        logger.debug("Authorization error: %s", err)
-        info = {"type": "authentication", "loc": ["header", "bearer"], "msg": err.args[0]}
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            headers={"WWW-Authenticate": "Bearer"},
-            detail=[info],
-        ) from err
-
-    return None
+    logger.debug("Checking secret.")
+    correct = request.app.state.settings.secret == secret.credentials
+    if not correct:
+        logger.debug("Incorrect secret.")
+        raise FlaatForbidden("Incorrect secret")

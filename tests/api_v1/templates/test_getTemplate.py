@@ -65,5 +65,5 @@ def test_500_server_error(response: Response) -> None:
     # Assert message is valid
     message = response.json()
     assert message["detail"][0]["type"] == "server_error"
-    assert message["detail"][0]["loc"] == []
+    assert message["detail"][0]["loc"] == ["server"]
     assert message["detail"][0]["msg"] == "Internal Server Error"

@@ -9,6 +9,7 @@ from uuid import UUID
 from cookiecutter.main import cookiecutter
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.responses import FileResponse
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from app import dependencies as deps
@@ -59,39 +60,23 @@ async def fetch_fields(
     """
 
     logger.info("Fetching fields of the cookiecutter template.")
-    try:
-        logger.debug("Fetching template with id: %s.", uuid)
-        template = session.get(models.Template, uuid)
+    logger.debug("Fetching template with id: %s.", uuid)
+    template = session.get(models.Template, uuid)
 
-        logger.debug("Checking if template exists.")
-        if not template:
-            raise KeyError("Template not found")
+    logger.debug("Checking if template exists.")
+    if not template:
+        raise NoResultFound("Template not found")
 
-        logger.debug("Fetching cookiecutter.json file.")
-        url = f"{template.gitLink}/raw/{template.gitCheckout}/cookiecutter.json"
-        req = urllib.request.Request(url)
+    logger.debug("Fetching cookiecutter.json file.")
+    url = f"{template.gitLink}/raw/{template.gitCheckout}/cookiecutter.json"
+    req = urllib.request.Request(url)
 
-        logger.debug("Load and parse request into json, %s.", req)
-        with urllib.request.urlopen(req) as response:
-            data = json.load(response)
+    logger.debug("Load and parse request into json, %s.", req)
+    with urllib.request.urlopen(req) as response:
+        data = json.load(response)
 
-        logger.debug("Returning CutterForm dict from json")
-        return utils.parse_fields(data)
-
-    except KeyError as err:
-        logger.debug("Template %s not found: %s", uuid, err)
-        info = {"type": "not_found", "loc": ["path", "uuid"], "msg": err.args[0]}
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=[info]) from err
-
-    except NotImplementedError as err:
-        logger.debug("Field type not supported: %s", err)
-        info = {"type": "not_implemented", "loc": ["gitLink", "gitCheckout", "cookiecutter.json"], "msg": err.args[0]}
-        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=[info]) from err
-
-    except Exception as err:
-        logger.error("Error getting template %s: %s", uuid, err)
-        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
+    logger.debug("Returning CutterForm dict from json")
+    return utils.parse_fields(data)
 
 
 @router.post(
@@ -137,35 +122,24 @@ async def generate_project(
     """
 
     logger.info("Generating software project from the template.")
-    try:
-        logger.debug("Fetching template with id: %s.", uuid)
-        template = session.get(models.Template, uuid)
+    logger.debug("Fetching template with id: %s.", uuid)
+    template = session.get(models.Template, uuid)
 
-        logger.debug("Checking if template exists.")
-        if not template:
-            raise KeyError("Template not found")
+    logger.debug("Checking if template exists.")
+    if not template:
+        raise NoResultFound("Template not found")
 
-        logger.debug("Generating project into memory zip.")
-        cookiecutter(
-            template=template.gitLink,
-            checkout=template.gitCheckout,
-            no_input=True,
-            extra_context=options_in,
-            output_dir=f"{tempdir}/project",
-        )
+    logger.debug("Generating project into memory zip.")
+    cookiecutter(
+        template=template.gitLink,
+        checkout=template.gitCheckout,
+        no_input=True,
+        extra_context=options_in,
+        output_dir=f"{tempdir}/project",
+    )
 
-        logger.debug("Creating zip file from project folder.")
-        shutil.make_archive(f"{tempdir}/project", "zip", f"{tempdir}/project", logger=logger)
+    logger.debug("Creating zip file from project folder.")
+    shutil.make_archive(f"{tempdir}/project", "zip", f"{tempdir}/project", logger=logger)
 
-        logger.debug("Returning cookiecutter.json file.")
-        return FileResponse(f"{tempdir}/project.zip", media_type="application/zip", filename="project.zip")
-
-    except KeyError as err:
-        logger.debug("Template %s not found: %s", uuid, err)
-        info = {"type": "not_found", "loc": ["path", "uuid"], "msg": err.args[0]}
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=[info]) from err
-
-    except Exception as err:
-        logger.error("Error getting template %s: %s", uuid, err)
-        info = {"type": "server_error", "loc": [], "msg": "Internal Server Error"}
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=[info]) from err
+    logger.debug("Returning cookiecutter.json file.")
+    return FileResponse(f"{tempdir}/project.zip", media_type="application/zip", filename="project.zip")
