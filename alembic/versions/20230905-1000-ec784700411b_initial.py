@@ -1,7 +1,7 @@
 """"initial"
 
 Revision ID: ec784700411b
-Revises: 
+Revises: None
 Create Date: 2023-09-05 10:00:52.391838
 
 """
