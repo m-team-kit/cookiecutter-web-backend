@@ -69,10 +69,13 @@ async def fetch_fields(
 
     logger.debug("Fetching cookiecutter.json file.")
     url = f"{template.gitLink}/raw/{template.gitCheckout}/cookiecutter.json"
-    req = urllib.request.Request(url)
+    if url.lower().startswith("http"):
+        req = urllib.request.Request(url)
+    else:
+        raise ValueError(f"Bad url in '{template}'.") from None
 
     logger.debug("Load and parse request into json, %s.", req)
-    with urllib.request.urlopen(req) as response:
+    with urllib.request.urlopen(req) as response:  # nosec (validated above)
         data = json.load(response)
 
     logger.debug("Returning CutterForm dict from json")
