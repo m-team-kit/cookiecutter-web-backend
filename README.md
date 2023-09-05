@@ -4,11 +4,11 @@
   - [x] Add launch.json file to run the application in debug mode
   - [x] Add settings.json file to configure vscode
   - [x] Add dictionary file to configure vscode spell checker
-- [ ] Add alembic folder with first migration to build database
+- [x] Add alembic folder with first migration to build database
   - [x] Add alembic.ini file to configure alembic
   - [x] Configure env.py file to use alembic
-  - [ ] Add README file to explain how to use alembic
-  - [ ] Add first migration to build database
+  - [x] Add README file to explain how to use alembic
+  - [x] Add first migration to build database
 - [x] Implement factories model to run the application
   - [x] Configure **init**.py file to import create_app function
   - [x] Add autoapp.py file as start point to the application
