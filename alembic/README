@@ -1,1 +1,36 @@
 Generic single-database configuration.
+
+The database connection is configured by the environment variables:
+
+```bash
+POSTGRES_HOST
+POSTGRES_USER
+POSTGRES_PASSWORD
+POSTGRES_DB
+```
+
+## Generate a migrations
+
+In case you have modified the models and need to create a new migration, you can use the following command:
+
+```bash
+$ alembic revision --autogenerate -m "Migration message"
+```
+
+This will create a new migration file in the `alembic/versions` folder.
+You should review the migration file and modify it if necessary.
+Once you test the migration, remember to commit this file to the repository and run the migrations in the production environment.
+
+> Or use the vscode command `Python: Alembic revision`.
+
+## Upgrade database
+
+Before you can run the application, you need to create the database and run the migrations. You can do this with the following commands:
+
+```bash
+$ alembic upgrade head
+```
+
+Remember this should be run in the production database so the changes are applied.
+
+> Or use the vscode command `Python: Alembic upgrade`.
