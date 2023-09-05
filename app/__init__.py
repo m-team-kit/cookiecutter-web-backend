@@ -57,17 +57,8 @@ def create_app(**custom_parameters) -> FastAPI:
 def mount_api(package, app: FastAPI, prefix: str) -> None:
     """Mount an API to the main app."""
     api = FastAPI(description=package.__doc__)
-    # api.openapi_version = package.OPENAPI_VERSION
-    # api.exception_handler(RequestValidationError)(validation_exception_handler)
     api.separate_input_output_schemas = False
     api.state = app.state
     app.mount(prefix, api)
     api.include_router(package.api_router)
     package.add_exception_handlers(api)
-
-
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
-    )

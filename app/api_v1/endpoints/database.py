@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument,missing-module-docstring
 import json
 import logging
 import pathlib
@@ -6,7 +6,6 @@ import tempfile
 
 import git
 from fastapi import APIRouter, Depends, Request, status
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 from app import dependencies as deps
@@ -156,6 +155,7 @@ def _create_template(session: Session, repo_file: pathlib.Path) -> None:
 
 
 def _update_template(session: Session, template: models.Template, dir: pathlib.Path) -> None:
+    # pylint: disable=redefined-builtin
     logger.debug("Opening template file for %s.", template.repoFile)
     with open(dir / template.repoFile, "r", encoding="utf-8") as file:
         template_kwds = json.load(file)

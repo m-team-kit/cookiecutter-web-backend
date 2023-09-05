@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring
 import logging
 import tempfile
 from typing import Generator

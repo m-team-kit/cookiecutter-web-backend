@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument,missing-module-docstring
 import json
 import logging
 import shutil
@@ -7,10 +7,10 @@ import urllib.request
 from uuid import UUID
 
 from cookiecutter.main import cookiecutter
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, status
 from fastapi.responses import FileResponse
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import NoResultFound
 
 from app import dependencies as deps
 from app import models, utils

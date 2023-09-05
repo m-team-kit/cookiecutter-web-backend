@@ -78,5 +78,5 @@ class EmailProcessor:
         """renders a Jinja template into HTML"""
         templateLoader = jinja2.FileSystemLoader(searchpath="/")
         templateEnv = jinja2.Environment(loader=templateLoader)
-        templ = templateEnv.get_template(self.templates_dir / template)
-        return templ.render(**kwargs)
+        template = templateEnv.get_template(self.templates_dir / template)
+        return template.render(**kwargs)

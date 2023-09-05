@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods,missing-module-docstring,missing-class-docstring,redefined-builtin
 from typing import Annotated, Optional
 from uuid import UUID
 
@@ -86,11 +87,11 @@ def validate_sort_by_field(option, field):
     return (option, field)
 
 
-def validate_sort_by(v: str) -> str:
+def validate_sort_by(value: str) -> str:
     """Validate sort by string."""
-    for item in v.split(","):
+    for item in value.split(","):
         validate_sort_by_field(item[0], item[1:])
-    return v
+    return value
 
 
 SortBy = TypeAliasType("SortBy", Annotated[str, AfterValidator(validate_sort_by)])

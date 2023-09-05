@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring,missing-class-docstring,E1102
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
@@ -31,7 +32,7 @@ class Template(Base):
     _tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete-orphan", passive_deletes=True)
 
     @property
-    def tags(self) -> List[str]:
+    def tags(self) -> List[str]:  # pylint: disable=missing-function-docstring
         return set(tag.name for tag in self._tags)
 
     @tags.setter

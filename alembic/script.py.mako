@@ -7,8 +7,9 @@ Create Date: ${create_date}
 """
 # pylint: disable=missing-function-docstring
 # pylint: disable=invalid-name
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 ${imports if imports else ""}
 
 # revision identifiers, used by Alembic.

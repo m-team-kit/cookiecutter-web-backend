@@ -7,9 +7,9 @@ Create Date: 2023-09-05 10:00:52.391838
 """
 # pylint: disable=missing-function-docstring
 # pylint: disable=invalid-name
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ec784700411b"

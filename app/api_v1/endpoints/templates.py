@@ -1,10 +1,10 @@
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument,missing-module-docstring
 import logging
 from typing import List
 from uuid import UUID
 
 import sqlalchemy as sa
-from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Body, Depends, Response, status
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -70,10 +70,10 @@ async def read_templates(
 
     logger.debug("Filtering templates by tags: %s.", tags)
     if tags:
-        search = search.join(models.Template._tags)
+        search = search.join(models.Template._tags)  # pylint: disable=protected-access
         search = search.filter(models.Tag.name.in_(tags))
         search = search.group_by(models.Template.id)
-        search = search.having(sa.func.count(models.Tag.id) == len(tags))
+        search = search.having(sa.func.count(models.Tag.id) == len(tags))  # pylint: disable=E1102
 
     logger.debug("Sorting templates by: %s.", sort_by)
     for sort in sort_by.split(","):

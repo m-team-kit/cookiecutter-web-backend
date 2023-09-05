@@ -1,4 +1,4 @@
-import os
+# pylint: disable=invalid-name,missing-docstring,wrong-import-position
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool

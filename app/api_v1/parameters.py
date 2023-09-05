@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring
 from fastapi import Query, Path
 
 language = Query(

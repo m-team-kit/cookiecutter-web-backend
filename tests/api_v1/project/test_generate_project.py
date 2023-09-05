@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name
+# pylint: disable=missing-module-docstring,redefined-outer-name
 from typing import Any, Dict
 import zipfile
 import io

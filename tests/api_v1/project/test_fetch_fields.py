@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name
+# pylint: disable=missing-module-docstring,redefined-outer-name
 from typing import Dict
 
 import pytest
@@ -58,7 +58,7 @@ def test_200_checkbox_field(response: Response) -> None:
     assert field["type"] == "checkbox"
     assert field["name"] == "checkbox_field"
     assert field["prompt"] == "Checkbox field example:"
-    assert field["default"] == True
+    assert field["default"] is True
 
 
 @pytest.mark.usefixtures("patch_fields_url")

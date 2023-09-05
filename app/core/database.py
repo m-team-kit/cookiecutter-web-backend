@@ -1,5 +1,5 @@
+# pylint: disable=missing-module-docstring
 import re
-from typing import Any
 
 from fastapi import FastAPI
 from sqlalchemy import create_engine
@@ -10,6 +10,7 @@ from app.config import Settings
 
 def init_app(app: FastAPI) -> None:
     """Initialize database configuration."""  # Disconnect Handling - Pessimistic
+    # pylint: disable=invalid-name
     settings: Settings = app.state.settings
     engine = create_engine(f"{settings.postgres_uri}", pool_pre_ping=True)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -25,6 +26,8 @@ def camel_to_snake(name: str) -> str:
 
 
 class Base(DeclarativeBase):
+    """Base class for all models."""
+
     __name__: str
 
     # Generate __tablename__ automatically

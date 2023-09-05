@@ -1,10 +1,11 @@
-# pylint: disable=unused-argument
+# pylint: disable=missing-module-docstring,unused-argument
 import urllib.error
 import urllib.request
 from unittest.mock import MagicMock, patch
-import app.api_v1.endpoints.project
 
 import pytest
+
+import app.api_v1.endpoints.project
 
 
 @pytest.fixture(scope="module", params=[])
@@ -17,6 +18,7 @@ def patch_fields_url(request):
 
 
 def urlopen_patch_gen(folder):
+    """Patch fixture to replace request response from cookiecutter.json."""
     def urlopen_patch(req):  # fmt: skip
         """Patch fixture that returns tests/cookiecutter/cookiecutter.json."""
         try:
@@ -43,6 +45,7 @@ def patch_cookiecutter(request):
 
 
 def cookiecutter_path_gen(folder, original):
+    """Patch fixture to replace cookiecutter template from a link."""
     def cookiecutter_patch(template, checkout, **kwds):  # fmt: skip
         """Patch fixture that returns tests/cookiecutter/cookiecutter.json."""
         original(template=folder, **kwds)

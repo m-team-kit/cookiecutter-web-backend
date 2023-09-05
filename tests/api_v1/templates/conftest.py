@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring,redefined-outer-name
 from unittest.mock import patch, MagicMock
 import pytest
 

@@ -1,4 +1,4 @@
-# pylint: disable=redefined-outer-name
+# pylint: disable=missing-module-docstring,redefined-outer-name
 from typing import Dict, List
 from uuid import UUID
 
@@ -11,8 +11,8 @@ from app.models.template import Template
 
 @pytest.fixture(scope="module")
 def response(client: TestClient, headers: Dict) -> None:
-    """Performs a POST request to update a database."""
-    response = client.post("/api/v1/db:update", headers=headers)
+    """Performs a POST request to create a database."""
+    response = client.post("/api/v1/db:create", headers=headers)
     return response
 
 
@@ -38,9 +38,9 @@ def test_204_no_content(response: Response, templates: List[Template]) -> None:
     assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
     assert templates["my_template_1"].gitCheckout == "dev"
     # Assert scores are correct
-    assert templates["my_template_1"].score is not None
+    assert templates["my_template_1"].score is None
     assert templates["my_template_2"].score is None
-    assert templates["my_template_4"].score is not None
+    assert templates["my_template_4"].score is None
     assert templates["my_template_5"].score is None
 
 
