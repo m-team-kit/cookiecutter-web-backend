@@ -1,38 +1,61 @@
+# ================================== BUILDER ===================================
 ARG  PYTHON_VERSION=latest
-FROM python:${PYTHON_VERSION}
+FROM python:${PYTHON_VERSION} as builder
 
 # Environments to reduce size of docker image
-ENV PYTHONFAULTHANDLER=1
-ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONFAULTHANDLER=true
+ENV PYTHONUNBUFFERED=true
 ENV PYTHONHASHSEED=random
-ENV PIP_NO_CACHE_DIR=off
+ENV PIP_NO_CACHE_DIR=true
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 ENV PIP_DEFAULT_TIMEOUT=100
-ENV POETRY_VERSION=1.5.1
 
-# Install Poetry
-RUN pip install "poetry==$POETRY_VERSION"
+# Install system updates and tools
+RUN apt-get update 
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
-COPY poetry.lock pyproject.toml /app/
+COPY . /app/
+RUN python -m pip install --upgrade pip
 
-# Use virtual environment till this issue is fixed:
-# https://github.com/python-poetry/poetry/issues/6459
-ENV VIRTUAL_ENV=/opt/venv PATH="/opt/venv/bin:$PATH"
-RUN python -m venv $VIRTUAL_ENV
+# Add user so does not run as root
+RUN useradd -m sid
+RUN chown -R sid:sid /app
 
-# Project initialization:
-ARG INSTALL_DEV=false
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi \
-    $(test $INSTALL_DEV && echo "--only main")
+# ================================= PRODUCTION =================================
+FROM builder AS production
 
-# Copy all files into the image
-COPY . /app
+RUN python -m pip install -r requirements.txt
 
-# Final environment variables
-ENV PYTHONPATH=/app
-
-# Configure container startup
+USER sid
+EXPOSE 8000
 CMD ["uvicorn", "autoapp:app", "--proxy-headers", "--host", "0.0.0.0"]
+
+# ================================= TESTING ====================================
+FROM production AS testing
+USER root
+
+# Install postgresql for testing
+RUN apt-get install -y --no-install-recommends \
+    # Install system updates and tools
+    postgresql && \
+    # Clean up & back to dialog front end
+    apt-get autoremove -y && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install -r requirements-test.txt
+RUN python -m pip install tox
+
+USER sid
+CMD ["python", "-m", "pytest", "tests"]
+
+# ================================= DEVELOPMENT ================================
+FROM testing AS development
+USER root
+
+RUN python -m pip install -r requirements-dev.txt
+
+USER sid
+CMD ["uvicorn", "autoapp:app","--reload", "--host", "0.0.0.0"]
