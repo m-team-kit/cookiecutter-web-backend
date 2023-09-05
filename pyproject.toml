@@ -14,7 +14,6 @@ requests = "~2.31.0"
 passlib = { version = "~1.7.4", extras = ["bycrypt"] }
 tenacity = "~8.2.2"
 pydantic = "~2.1.1"
-emails = "~0.6"
 raven = "~6.10.0"
 gunicorn = "~21.2.0"
 psycopg2-binary = "~2.9.7"
