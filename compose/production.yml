@@ -1,0 +1,13 @@
+services:
+  backend:
+    restart: always
+    ports:
+      - 8000:8000
+    build:
+      args:
+        INSTALL_DEV: false
+
+  database:
+    image: postgres:15
+    restart: always
+    ports: []

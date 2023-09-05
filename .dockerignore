@@ -10,4 +10,19 @@ dockerfile
 
 # No need to copy git history
 .git
-.gitignore
+
+# No need to copy tox environments
+.tox
+
+# No need to copy cache files
+*.swp
+*.pyc
+
+# Protection to copy .env file
+.env
+
+# No need to copy .pytest_cache
+.pytest_cache
+
+# Do not copy data content into container (mount it instead)
+data

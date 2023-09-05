@@ -35,4 +35,4 @@ COPY . /app
 ENV PYTHONPATH=/app
 
 # Configure container startup
-CMD ["uvicorn", "app.__main__:app", "--proxy-headers", "--host", "0.0.0.0"]
+CMD ["uvicorn", "autoapp:app", "--proxy-headers", "--host", "0.0.0.0"]

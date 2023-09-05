@@ -5,11 +5,11 @@ services:
       - database
     env_file:
       - .env
+    environment:
+      - POSTGRES_HOST=database
     build:
-      context: ./backend
-      dockerfile: backend.dockerfile
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-true}
+      context: .
+      dockerfile: dockerfile
 
   database:
     image: postgres:15
@@ -17,22 +17,8 @@ services:
       - app-db-data:/var/lib/postgresql/data/pgdata
     env_file:
       - .env
-    ports:
-      - 5432:5432
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
 
-  pgadmin:
-    image: dpage/pgadmin4
-    depends_on:
-      - database
-    volumes:
-      - pg-db-data:/var/lib/pgadmin
-    env_file:
-      - .env
-    ports:
-      - 5050:80
-
 volumes:
   app-db-data:
-  pg-db-data:
