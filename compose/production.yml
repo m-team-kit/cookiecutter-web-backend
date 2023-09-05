@@ -1,0 +1,16 @@
+services:
+  backend:
+    image: backend:latest
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - 8000:8000
+    build:
+      tags: [backend:latest]
+      target: production
+
+  database:
+    image: postgres:15
+    restart: always
+    ports: []

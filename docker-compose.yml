@@ -1,0 +1,24 @@
+services:
+  backend:
+    image: backend
+    depends_on:
+      - database
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=database
+    build:
+      context: .
+      dockerfile: dockerfile
+
+  database:
+    image: postgres:15
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+volumes:
+  app-db-data:

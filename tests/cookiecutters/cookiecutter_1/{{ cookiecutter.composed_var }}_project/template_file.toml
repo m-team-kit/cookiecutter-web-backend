@@ -1,0 +1,6 @@
+text_field = "{{ cookiecutter.text_field }}"
+composed_var = "{{ cookiecutter.composed_var }}"
+checkbox_field = "{{ cookiecutter.checkbox_field }}"
+select_field = "{{ cookiecutter.select_field }}"
+no_prompt_var = "{{ cookiecutter.no_prompt_var }}"
+private_var = "{{ cookiecutter.__private_var }}"

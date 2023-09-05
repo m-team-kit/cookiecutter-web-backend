@@ -1,0 +1,18 @@
+{
+    "text_field": "My text field",
+    "composed_var": "{{ cookiecutter.text_field|lower|replace(' ', '_') }}",
+    "checkbox_field": true,
+    "select_field": [ "option_1", "option_2", "option_3" ],
+    "no_prompt_var": "Some text",
+    "__private_var": "This variable will not be rendered",
+    "__prompts__": {
+        "text_field": "Text field example:",
+        "composed_var": "Composed variable example:",
+        "checkbox_field": "Checkbox field example:",
+        "select_field": {
+            "__prompt__": "Select field example:",
+            "option_1": "Option 1 example",
+            "option_2": "Option 2 example"
+        }
+    }
+}

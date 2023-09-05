@@ -1,0 +1,12 @@
+[ENVIRONMENT]
+PROJECT_NAME = "test-fastapi"
+REPOSITORY_URL="https://some-repo.git"
+BACKEND_CORS_ORIGINS = '["http://localhost"]'
+TRUSTED_OP_LIST = '["https://aai-dev.egi.eu/auth/realms/egi"]'
+SECRET = "6de44315b565ea73f778282d"
+
+[DATABASE]
+dbname = "test_database"
+password = "test_password"
+version = 12.15
+connection_timeout = 60

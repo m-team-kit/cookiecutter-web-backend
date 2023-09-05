@@ -1,0 +1,16 @@
+services:
+  tests:
+    image: backend:testing
+    restart: no
+    depends_on: []
+    build:
+      context: .
+      dockerfile: dockerfile
+      tags: [backend:testing]
+      target: testing
+
+  backend:
+    profiles: [external_backend]
+
+  database:
+    profiles: [external_database]

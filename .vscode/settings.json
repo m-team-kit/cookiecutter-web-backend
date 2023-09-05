@@ -1,0 +1,30 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+    },
+    "cSpell.words": [
+        "autoapp",
+        "autoflush",
+        "cookiecutter",
+        "cookiecutters",
+        "DBAPI",
+        "dpage",
+        "jsonable",
+        "nullslast",
+        "ondelete",
+        "onupdate",
+        "outerjoin",
+        "pgadmin",
+        "poolclass",
+        "psycopg",
+        "searchpath",
+        "sessionmaker",
+        "starlette"
+    ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "black-formatter.args": [ "--line-length=150" ]
+}

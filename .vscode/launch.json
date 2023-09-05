@@ -1,0 +1,55 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: FastAPI",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "autoapp:app",
+                "--reload"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "jinja": false,
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Alembic revision",
+            "type": "python",
+            "request": "launch",
+            "module": "alembic",
+            "args": [
+                "revision",
+                "--autogenerate",
+                "-m",
+                "\"${input:revisionMessage}\""
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "justMyCode": true,
+        },
+        {
+            "name": "Python: Alembic upgrade",
+            "type": "python",
+            "request": "launch",
+            "module": "alembic",
+            "args": [
+                "upgrade",
+                "head"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "justMyCode": true
+        },
+    ],
+    "inputs": [
+        {
+            "id": "revisionMessage",
+            "type": "promptString",
+            "description": "Revision message",
+            "default": "standard"
+        }
+    ]
+}
