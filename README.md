@@ -20,7 +20,7 @@
     - [x] Add templates endpoints
     - [x] Add parameters for query, path and body
     - [x] Add schemas for requests and responses
-  - [ ] Add forward of api_latest endpoint to api_v1
+  - [x] Add forward of api_latest endpoint to api_v1
   - [x] Add authentication functionalities for OIDC users
   - [x] Add authentication functionalities for admin secret key
   - [x] Add database functionalities and models with SQLAlchemy
@@ -32,7 +32,6 @@
 - [ ] Add scripts folder to store application scripts
   - [ ] Add load_environment.sh file to load environment variables
 - [ ] Add tests folder to test application endpoints
-  - [ ] Add api_latest folder to test api_latest endpoints
   - [x] Add api_v1 folder to test api_latest endpoints
   - [x] Add configurations folder to setup server
   - [x] Add repositories folder to test database functionalities
