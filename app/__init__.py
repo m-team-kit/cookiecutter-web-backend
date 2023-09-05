@@ -1,10 +1,10 @@
 """Description to be changed later at:
     - backend/app/__main__.py
 """
-from fastapi import FastAPI, Request, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.responses import FileResponse, RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 
 import app.core.authentication as auth
@@ -48,7 +48,12 @@ def create_app(**custom_parameters) -> FastAPI:
     # Favicon route
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
-        return FileResponse(f"{__file__}/../favicon.ico")
+        return FileResponse(Path(__file__).parent / "../favicon.ico")
+
+    # Redirect to latest API version
+    @app.get("/", include_in_schema=False)
+    async def redirect_to_latest():
+        return RedirectResponse(url="/api/latest/docs")
 
     # Return FastAPI instance
     return app
