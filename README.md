@@ -1,15 +1,15 @@
 # TODOs before releasing version 1.0.0
 
-- [ ] Add .vscode folder with launch, settings and dictionary files
+- [x] Add .vscode folder with launch, settings and dictionary files
   - [x] Add launch.json file to run the application in debug mode
   - [x] Add settings.json file to configure vscode
-  - [ ] Add dictionary file to configure vscode spell checker
+  - [x] Add dictionary file to configure vscode spell checker
 - [ ] Add alembic folder with first migration to build database
   - [x] Add alembic.ini file to configure alembic
   - [x] Configure env.py file to use alembic
   - [ ] Add README file to explain how to use alembic
   - [ ] Add first migration to build database
-- [ ] Implement factories model to run the application
+- [x] Implement factories model to run the application
   - [x] Configure **init**.py file to import create_app function
   - [x] Add autoapp.py file as start point to the application
 - [ ] Add app folder with all application requirements
@@ -43,7 +43,7 @@
 - [x] Add docker-compose.yml file to run the application as container
 - [x] Add favicon.ico file to display favicon in browser
 - [x] Add pyproject.toml file to manage dependencies with poetry
-- [ ] Add a `README.md` file
+- [x] Add a `README.md` file
 - [ ] Add a `LICENSE` file
 - [ ] Add a `CHANGELOG.md` file
 - [ ] Add a `ISSUE_TEMPLATE.md` file
@@ -64,17 +64,28 @@ Implemented using:
 
 ## Installation and run
 
-There are 2 basic ways to install run the application:
-
-- Using docker and docker-compose (recommended for production)
+There standard way to run the application is via docker-compose:
 
 ```bash
-$ docker-compose up
+$ docker compose -f docker-compose.yml -f compose/production.yml up -d
 ```
 
-This will run the application following the configuration in the `docker-compose.yml` file. It will also run a postgres database and a pgadmin instance to manage the database.
+See [Use Compose in production](https://docs.docker.com/compose/production/) for more information.
 
-- Using poetry (recommended for development)
+This will run the application following the configuration in `compose.yml` and `production.yml` files.
+It automatically loads the environment variables from the `.env` file and creates a postgres database.
+
+If it is the first time you run the application or you have modified the models, you need to run the migrations.
+
+```bash
+$ docker compose -f docker-compose.yml -f compose/production.yml run --rm backend alembic upgrade head
+```
+
+For more details about the migrations, you can access [README](alembic/README.md) inside the `alembic` folder.
+
+## Development
+
+If you need to run the application in local for debugging or development, you can use the following methods:
 
 ```bash
 $ poetry install
@@ -83,14 +94,14 @@ $ poetry install
 This will run the application following the configuration in the `pyproject.toml` file. You can run your custom database or use the one in the `docker-compose.yml` file with the following command:
 
 ```bash
-$ docker-compose up db
+$ docker-compose -f docker-compose -f compose/development.yml up -d
 ```
 
 Then you can run the application with the following command:
 
 ```bash
-$ ./scripts/load_environment.sh
 $ poetry run uvicorn autoapp:app --reload
 ```
 
-> If you use vscode, you can run the application in debug mode using the `Python: FastAPI` configuration. This loads the `.env` file automatically.
+Note that this does not load the environment variables from the `.env` file. You need to load them with your preferred method.
+If you use vscode, you can run the application in debug mode using the `Python: FastAPI` configuration. This loads the `.env` file automatically.
