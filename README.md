@@ -39,7 +39,8 @@
 - [x] Add .gitignore file to ignore files and folders
 - [x] Add docker-compose.yml file to run the application as container
 - [x] Add favicon.ico file to display favicon in browser
-- [x] Add pyproject.toml file to manage dependencies with poetry
+- [x] Add pyproject.toml
+- [x] Migrate from poetry to normal pip
 - [x] Add a `README.md` file
 - [ ] Add a `LICENSE` file
 - [ ] Add a `CHANGELOG.md` file
@@ -80,12 +81,33 @@ $ docker compose -f docker-compose.yml -f compose/production.yml run --rm backen
 
 For more details about the migrations, you can access [README](alembic/README.md) inside the `alembic` folder.
 
+## Testing
+
+There are multiple ways to run the tests. The standard way is to use `tox`:
+
+```bash
+$ tox
+```
+
+However, you can also run the tests with `pytest`:
+
+```bash
+$ pip install -r requirements.txt -r requirements-test.txt
+$ python -m pytest tests
+```
+
+Or inside docker if you need to test the application in a clean environment:
+
+```bash
+$ docker-compose -f docker-compose.yml -f compose/testing.yml run --rm backend
+```
+
 ## Development
 
 If you need to run the application in local for debugging or development, you can use the following methods:
 
 ```bash
-$ poetry install
+$ pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 This will run the application following the configuration in the `pyproject.toml` file. You can run your custom database or use the one in the `docker-compose.yml` file with the following command:
@@ -97,7 +119,7 @@ $ docker-compose -f docker-compose -f compose/development.yml up -d
 Then you can run the application with the following command:
 
 ```bash
-$ poetry run uvicorn autoapp:app --reload
+$ uvicorn autoapp:app --reload
 ```
 
 Note that this does not load the environment variables from the `.env` file. You need to load them with your preferred method.
