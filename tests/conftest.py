@@ -18,8 +18,7 @@ from pytest_postgresql.janitor import DatabaseJanitor
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from app import create_app, models
-from app.core import database
+from app import create_app, database, models
 
 
 @pytest.fixture(scope="session", params=["config-1"])

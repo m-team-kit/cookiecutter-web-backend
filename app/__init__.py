@@ -7,8 +7,8 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 
-import app.core.authentication as auth
-import app.core.database as db
+import app.authentication as auth
+import app.database as db
 from app import api_v1
 from app.config import Settings
 
