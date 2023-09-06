@@ -43,6 +43,19 @@
             "envFile": "${workspaceFolder}/.env",
             "justMyCode": true
         },
+        {
+            "name": "Python: Attach backend",
+            "type": "python",
+            "request": "attach",
+            "port": 5678,
+            "host": "localhost",
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/app"
+                }
+            ]
+        }
     ],
     "inputs": [
         {

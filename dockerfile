@@ -46,7 +46,6 @@ RUN apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 RUN python -m pip install -r requirements-test.txt
-RUN python -m pip install tox
 
 USER sid
 CMD ["python", "-m", "pytest", "tests"]
@@ -58,4 +57,8 @@ USER root
 RUN python -m pip install -r requirements-dev.txt
 
 USER sid
-CMD ["uvicorn", "autoapp:app","--reload", "--host", "0.0.0.0"]
+EXPOSE 5678
+CMD ["python", "-Xfrozen_modules=off", \
+    "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", \
+    "-m", "uvicorn", "autoapp:app", "--reload", "--host", "0.0.0.0" \
+    ]

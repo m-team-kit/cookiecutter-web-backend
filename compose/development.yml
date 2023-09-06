@@ -4,8 +4,11 @@ services:
     restart: no
     depends_on:
       - database
+    volumes:
+      - .:/app
     ports:
-      - 80:8000
+      - 8000:8000
+      - 5678:5678
     build:
       tags: [backend:development]
       target: development
@@ -22,11 +25,11 @@ services:
     depends_on:
       - database
     volumes:
-      - ./data/pgadmin:/var/lib/pgadmin
+      - app-pgadmin:/var/lib/pgadmin
     env_file:
       - .env
     ports:
       - 5050:80
 
 volumes:
-  pg-db-data:
+  app-pgadmin:
