@@ -100,16 +100,16 @@ $ docker-compose -f docker-compose.yml -f compose/testing.yml run --rm tests
 
 ## Development
 
-If you need to run the application in local for debugging or development, you can use the following methods:
+If you need to run the application in local for debugging or development, you need to install the development requirements:
 
 ```bash
 $ pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-This will run the application following the configuration in the `pyproject.toml` file. You can run your custom database or use the one in the `docker-compose.yml` file with the following command:
+Additionally you will need to start a postgres database. You can use the one in the `docker-compose.yml` file with the following command:
 
 ```bash
-$ docker-compose -f docker-compose -f compose/development.yml up -d
+$ docker-compose -f docker-compose -f compose/development.yml up -d database
 ```
 
 Then you can run the application with the following command:
@@ -118,5 +118,13 @@ Then you can run the application with the following command:
 $ uvicorn autoapp:app --reload
 ```
 
-Note that this does not load the environment variables from the `.env` file. You need to load them with your preferred method.
-If you use vscode, you can run the application in debug mode using the `Python: FastAPI` configuration. This loads the `.env` file automatically.
+> Note that this does not load the environment variables from the `.env` file. You need to load them with your preferred method.
+
+Or you can simply run the application with docker-compose:
+
+```bash
+$ docker-compose -f docker-compose.yml -f compose/development.yml up
+```
+
+And then attach the debugger to the running container.
+For vscode the `launch.json` contains a configuration `Python: Attach backend` to attach the debugger to the running backend.
