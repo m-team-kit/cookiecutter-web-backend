@@ -95,7 +95,7 @@ $ python -m pytest tests
 Or inside docker if you need to test the application in a clean environment:
 
 ```bash
-$ docker-compose -f docker-compose.yml -f compose/testing.yml run --rm backend
+$ docker-compose -f docker-compose.yml -f compose/testing.yml run --rm tests
 ```
 
 ## Development
