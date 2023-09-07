@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 
 from app import dependencies as deps
-from app import models
+from app import models, notifications
 from app.api_v1 import schemas
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,7 @@ async def create_database(
     tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
     valid_secret: models.User = Depends(deps.check_secret),
     session: Session = Depends(deps.get_session),
+    notification: None = Depends(notifications.db_created),
 ) -> None:
     """
     Use this method to create local copy of the database from YAML files in
@@ -103,6 +104,7 @@ async def update_database(
     tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
     valid_secret: models.User = Depends(deps.check_secret),
     session: Session = Depends(deps.get_session),
+    notification: None = Depends(notifications.db_updated),
 ) -> None:
     """
     Use this method to update local copy of the database from YAML files in
