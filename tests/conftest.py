@@ -5,13 +5,18 @@ See: https://fastapi.tiangolo.com/tutorial/testing/
 # pylint: disable=unused-argument
 import os
 import tomllib
+from mailbox import Maildir
+from operator import itemgetter
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 from uuid import UUID
 
 import flaat
 import pytest
 import sqlalchemy as sa
+from aiosmtpd.controller import Controller
+from aiosmtpd.handlers import Mailbox
 from fastapi.testclient import TestClient
 from flaat.exceptions import FlaatUnauthenticated
 from pytest_postgresql.janitor import DatabaseJanitor
@@ -84,6 +89,17 @@ def session_generator(sql_engine):
     return sessionmaker(autocommit=False, autoflush=False, bind=sql_engine)
 
 
+@pytest.fixture(scope="module", name="mailbox", autouse=True)
+def smtp_server(config):
+    """Fixture to provide each testing SMTP server."""
+    with TemporaryDirectory() as tempdir:
+        maildir_path = os.path.join(tempdir, "maildir")
+        controller = Controller(Mailbox(maildir_path), **config["SMTP"])
+        controller.start()
+        yield Maildir(maildir_path, create=False)
+        controller.stop()
+
+
 @pytest.fixture(scope="module", name="custom")
 def custom_settings(request):
     """Fixture to provide each testing custom configuration values."""
@@ -142,6 +158,12 @@ def templates(response, session_generator):
     with session_generator() as session:
         templates = session.query(models.Template).all()
         yield {Path(t.repoFile).stem: t for t in templates}
+
+
+@pytest.fixture(scope="module")
+def notifications(response, mailbox):
+    """Fixture to provide email notifications after request."""
+    return sorted(mailbox, key=itemgetter("subject"))
 
 
 @pytest.fixture(scope="module", autouse=True)

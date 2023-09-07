@@ -46,6 +46,17 @@ def test_204_no_content(response: Response, templates: List[Template]) -> None:
 
 @pytest.mark.usefixtures("patch_repository")
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
+@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
+def test_204_notification(config, notifications) -> None:
+    """Tests the response status code is 204 and valid."""
+    assert "DB Created" in notifications[0]["subject"]
+    assert notifications[0]["from"] == config["ENVIRONMENT"]["NOTIFICATIONS_SENDER"]
+    assert notifications[0]["to"] == config["ENVIRONMENT"]["NOTIFICATIONS_TARGET"]
+    assert "DB Created" in notifications[0].get_payload()
+
+
+@pytest.mark.usefixtures("patch_repository")
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("headers", [{}], indirect=True)
 def test_401_unauthorized(response: Response) -> None:
     """Tests the response status code is 401 and valid."""
