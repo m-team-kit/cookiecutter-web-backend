@@ -3,6 +3,7 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
     },
     "cSpell.words": [
+        "aiosmtpd",
         "autoapp",
         "autoflush",
         "cookiecutter",
@@ -10,6 +11,8 @@
         "DBAPI",
         "dpage",
         "jsonable",
+        "loadscope",
+        "noproc",
         "nullslast",
         "ondelete",
         "onupdate",
@@ -19,7 +22,8 @@
         "psycopg",
         "searchpath",
         "sessionmaker",
-        "starlette"
+        "starlette",
+        "xdist"
     ],
     "python.testing.pytestArgs": [
         "tests"

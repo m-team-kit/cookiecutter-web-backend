@@ -1,17 +1,36 @@
 # pylint: disable=missing-module-docstring,unused-argument
 import shutil
+from pathlib import Path
 from unittest.mock import patch
 
 import git
 import pytest
 from git import InvalidGitRepositoryError
 
+from app import models
 
-@pytest.fixture(scope="module", params=[])
+
+@pytest.fixture(scope="module")
+def templates(response, sql_session):
+    """Fixture to provide database templates after request."""
+    templates = sql_session.query(models.Template).all()
+    yield {Path(t.repoFile).stem: t for t in templates}
+
+
+@pytest.fixture(scope="module")
+def notifications(response):
+    """Fixture to return notifications."""
+    raise NotImplementedError  # TODO: Implement
+
+
+@pytest.fixture(scope="module")
 def patch_repository(request):
     """Patch fixture to replace request response from repository with data."""
-    patch_function = clone_patch_gen(request.param)
-    with patch.object(git.Repo, "clone_from", side_effect=patch_function):
+    if hasattr(request, "param"):
+        patch_function = clone_patch_gen(request.param)
+        with patch.object(git.Repo, "clone_from", side_effect=patch_function):
+            yield
+    else:
         yield
 
 

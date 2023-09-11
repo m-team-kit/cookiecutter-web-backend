@@ -1,22 +1,20 @@
-# pylint: disable=missing-module-docstring,redefined-outer-name
-from typing import Dict
+"""Tests for the fetch_fields endpoint."""
+# pylint: disable=redefined-outer-name
+from unittest.mock import Mock
 
 import pytest
-from fastapi import Response
-from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="module")
-def response(client: TestClient, template_uuid: str, headers: Dict) -> None:
+def response(client, template_uuid, headers):
     """Performs a POST request to create a database."""
     response = client.get(f"/api/v1/project/{template_uuid}", headers=headers)
     return response
 
 
-@pytest.mark.usefixtures("patch_fields_url")
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_200_length(response: Response) -> None:
+def test_200_length(response):
     """Tests the response status code is 200 and valid."""
     # Assert response is valid
     assert response.status_code == 200
@@ -25,10 +23,9 @@ def test_200_length(response: Response) -> None:
     assert len(response.json()) == 5
 
 
-@pytest.mark.usefixtures("patch_fields_url")
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_200_text_field(response: Response) -> None:
+def test_200_text_field(response):
     """Tests the response status code is 200 and valid."""
     field = response.json()[0]
     assert field["type"] == "text"
@@ -37,10 +34,9 @@ def test_200_text_field(response: Response) -> None:
     assert field["default"] == "My text field"
 
 
-@pytest.mark.usefixtures("patch_fields_url")
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_200_composed_field(response: Response) -> None:
+def test_200_composed_field(response):
     """Tests the response status code is 200 and valid."""
     field = response.json()[1]
     assert field["type"] == "text"
@@ -49,10 +45,9 @@ def test_200_composed_field(response: Response) -> None:
     assert field["default"] == "{{ cookiecutter.text_field|lower|replace(' ', '_') }}"
 
 
-@pytest.mark.usefixtures("patch_fields_url")
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_200_checkbox_field(response: Response) -> None:
+def test_200_checkbox_field(response):
     """Tests the response status code is 200 and valid."""
     field = response.json()[2]
     assert field["type"] == "checkbox"
@@ -61,10 +56,9 @@ def test_200_checkbox_field(response: Response) -> None:
     assert field["default"] is True
 
 
-@pytest.mark.usefixtures("patch_fields_url")
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_200_select_field(response: Response) -> None:
+def test_200_select_field(response):
     """Tests the response status code is 200 and valid."""
     field = response.json()[3]
     assert field["type"] == "select"
@@ -77,7 +71,7 @@ def test_200_select_field(response: Response) -> None:
 
 
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)
-def test_404_not_found(response: Response) -> None:
+def test_404_not_found(response):
     """Tests the response status code is 404 and valid."""
     # Assert response is valid
     assert response.status_code == 404
@@ -89,7 +83,7 @@ def test_404_not_found(response: Response) -> None:
 
 
 @pytest.mark.parametrize("template_uuid", ["bad_uuid"], indirect=True)
-def test_422_validation_error(response: Response) -> None:
+def test_422_validation_error(response):
     """Tests the response status code is 422 and valid."""
     # Assert response is valid
     assert response.status_code == 422
@@ -100,10 +94,9 @@ def test_422_validation_error(response: Response) -> None:
     assert "Input should be a valid UUID" in message["detail"][0]["msg"]
 
 
-@pytest.mark.usefixtures("patch_fields_url")
 @pytest.mark.parametrize("patch_fields_url", ["repository_down"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_2"], indirect=True)
-def test_500_server_error(response: Response) -> None:
+def test_500_repository_down(response):
     """Tests the response status code is 500 and valid.""" ""
     # Assert response is valid
     assert response.status_code == 500
@@ -114,10 +107,22 @@ def test_500_server_error(response: Response) -> None:
     assert message["detail"][0]["msg"] == "Internal Server Error"
 
 
-@pytest.mark.usefixtures("patch_fields_url")
+@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
+@pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
+def test_500_database_error(response):
+    """Tests the response status code is 500 and valid."""
+    # Assert response is valid
+    assert response.status_code == 500
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "server_error"
+    assert message["detail"][0]["loc"] == ["server"]
+    assert message["detail"][0]["msg"] == "Internal Server Error"
+
+
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_2"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_3"], indirect=True)
-def test_501_not_implemented(response: Response) -> None:
+def test_501_not_implemented(response):
     """Tests the response status code is 501 and valid.""" ""
     # Assert response is valid
     assert response.status_code == 501

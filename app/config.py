@@ -1,12 +1,15 @@
-# pylint: disable=missing-module-docstring
+"""Application module to load configuration."""
+# pylint: disable=missing-class-docstring
 from typing import Any, Dict, List, Optional, Set, Union
 
+from fastapi import FastAPI, Request
 from pydantic import AnyHttpUrl, HttpUrl, PostgresDsn, validator
 from pydantic_settings import BaseSettings
+from starlette.middleware.cors import CORSMiddleware
 
 
 class Settings(BaseSettings, case_sensitive=False):
-    # pylint: disable=missing-class-docstring,missing-function-docstring
+    # pylint: missing-function-docstring
     # pylint: disable=too-few-public-methods,unused-argument
 
     project_name: str
@@ -31,9 +34,9 @@ class Settings(BaseSettings, case_sensitive=False):
     trusted_op: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
 
     # API secret key to operate database
-    secret: str
+    admin_secret: str
 
-    @validator("secret", pre=True)
+    @validator("admin_secret", pre=True)
     @classmethod
     def secret_quality(cls, value: str) -> str:
         if len(value) < 12:
@@ -58,3 +61,36 @@ class Settings(BaseSettings, case_sensitive=False):
         port = values.get("postgres_port")
         path = values.get("postgres_db")
         return f"postgresql://{user}:{password}@{host}:{port}/{path}"
+
+    notifications_sender: Optional[str]
+    notifications_target: Optional[str]
+    smtp_port: Optional[int] = 587
+    smtp_host: Optional[str] = "postfix"
+
+
+def set_settings(app: FastAPI, **custom_parameters: dict) -> None:
+    """Set the settings object on the application."""
+    app.state.settings = Settings(**custom_parameters)
+    app.title = app.state.settings.project_name
+    app.description = __doc__
+    app.openapi_url = "/api/openapi.json"
+    app.separate_input_output_schemas = False
+    set_cors(app, app.state.settings)
+
+
+def get_settings(request: Request) -> Settings:
+    """Return the settings object."""
+    return request.app.state.settings
+
+
+def set_cors(app: FastAPI, settings: Settings) -> None:
+    """Set all CORS enabled origins."""
+    origins = [str(origin) for origin in settings.cors_origins]
+    if origins is not []:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=origins,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )

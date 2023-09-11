@@ -2,23 +2,25 @@ services:
   backend:
     image: backend
     depends_on:
-      - database
-    env_file:
-      - .env
-    environment:
-      - POSTGRES_HOST=database
+      database:
+        condition: service_healthy
+      smtp_server:
+        condition: service_healthy
     build:
       context: .
       dockerfile: dockerfile
 
   database:
     image: postgres:15
-    volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
-    env_file:
-      - .env
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
-volumes:
-  app-db-data:
+  smtp_server:
+    image: boky/postfix:v3.6.1-alpine
+    environment:
+      ALLOWED_SENDER_DOMAINS: templates.cloud.ai4eosc.eu

@@ -12,8 +12,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
-from app import dependencies as deps
-from app import models, utils
+from app import authentication, database, models, utils
 from app.api_v1 import parameters, schemas
 
 logger = logging.getLogger(__name__)
@@ -51,7 +50,7 @@ router = APIRouter()
 )
 async def fetch_fields(
     *,
-    session: Session = Depends(deps.get_session),
+    session: Session = Depends(database.get_session),
     uuid: UUID = parameters.template_uuid,
 ) -> list[dict]:
     """
@@ -113,11 +112,11 @@ async def fetch_fields(
 )
 async def generate_project(
     *,
-    session: Session = Depends(deps.get_session),
-    tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
+    session: Session = Depends(database.get_session),
+    tempdir: tempfile.TemporaryDirectory = Depends(utils.temp_folder),
     uuid: UUID = parameters.template_uuid,
     options_in: dict[str, str] = Body(),
-    current_user: models.User = Depends(deps.get_user),
+    current_user: models.User = Depends(authentication.get_user),
 ) -> FileResponse:
     """
     Use this method to generate software project using the specific template.

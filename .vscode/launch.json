@@ -43,6 +43,34 @@
             "envFile": "${workspaceFolder}/.env",
             "justMyCode": true
         },
+        {
+            "name": "Python: Alembic migration",
+            "type": "python",
+            "request": "launch",
+            "module": "alembic",
+            "args": [
+                "upgrade",
+                "head",
+                "--sql",
+                ">",
+                "scripts/setup_migration.sql"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Attach backend",
+            "type": "python",
+            "request": "attach",
+            "port": 5678,
+            "host": "localhost",
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/app"
+                }
+            ]
+        }
     ],
     "inputs": [
         {

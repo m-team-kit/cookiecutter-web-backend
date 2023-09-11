@@ -1,16 +1,25 @@
 services:
   backend:
-    image: backend:latest
     restart: always
-    depends_on:
-      - database
+    env_file: [.env]
     ports:
-      - 8000:8000
+      - 80:8000
     build:
-      tags: [backend:latest]
+      tags: [backend]
       target: production
 
   database:
-    image: postgres:15
     restart: always
-    ports: []
+    env_file: [.env]
+    volumes:
+      - ./scripts/setup_migration.sql:/docker-entrypoint-initdb.d/setup_migration.sql
+      - app-db-data:/var/lib/postgresql/data/pgdata
+
+  smtp_server:
+    image: boky/postfix:v3.6.1-alpine
+    restart: always
+    ports:
+      - 587:587
+
+volumes:
+  app-db-data:

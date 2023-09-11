@@ -5,11 +5,10 @@ import pathlib
 import tempfile
 
 import git
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app import dependencies as deps
-from app import models
+from app import authentication, config, database, models, notifications, utils
 from app.api_v1 import schemas
 
 logger = logging.getLogger(__name__)
@@ -42,10 +41,11 @@ router = APIRouter()
     response_model=None,
 )
 async def create_database(
-    request: Request,
-    tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
-    valid_secret: models.User = Depends(deps.check_secret),
-    session: Session = Depends(deps.get_session),
+    tempdir: tempfile.TemporaryDirectory = Depends(utils.temp_folder),
+    valid_secret: models.User = Depends(authentication.check_secret),
+    session: Session = Depends(database.get_session),
+    settings: database.Settings = Depends(config.get_settings),
+    notification: None = Depends(notifications.db_created),
 ) -> None:
     """
     Use this method to create local copy of the database from YAML files in
@@ -55,12 +55,7 @@ async def create_database(
 
     logger.info("Creating local database.")
     logger.debug("Cloning repository at %s.", tempdir)
-    git.Repo.clone_from(
-        url=f"{request.app.state.settings.repository_url}",
-        to_path=tempdir,
-        branch="main",
-        depth=1,
-    )
+    git.Repo.clone_from(f"{settings.repository_url}", tempdir, branch="main", depth=1)
 
     logger.debug("Deleting all templates from database.")
     session.query(models.Template).delete()
@@ -69,7 +64,7 @@ async def create_database(
     for path in pathlib.Path(tempdir).glob("*.json"):
         _create_template(session, path)
 
-    logger.debug("Committing changes to database.")
+    logger.debug("Commit changes to database.")
     session.commit()
 
 
@@ -99,10 +94,11 @@ async def create_database(
     response_model=None,
 )
 async def update_database(
-    request: Request,
-    tempdir: tempfile.TemporaryDirectory = Depends(deps.temp_folder),
-    valid_secret: models.User = Depends(deps.check_secret),
-    session: Session = Depends(deps.get_session),
+    tempdir: tempfile.TemporaryDirectory = Depends(utils.temp_folder),
+    valid_secret: models.User = Depends(authentication.check_secret),
+    session: Session = Depends(database.get_session),
+    settings: database.Settings = Depends(config.get_settings),
+    notification: None = Depends(notifications.db_updated),
 ) -> None:
     """
     Use this method to update local copy of the database from YAML files in
@@ -112,12 +108,7 @@ async def update_database(
 
     logger.info("Creating local database.")
     logger.debug("Cloning repository at %s.", tempdir)
-    git.Repo.clone_from(
-        url=f"{request.app.state.settings.repository_url}",
-        to_path=tempdir,
-        branch="main",
-        depth=1,
-    )
+    git.Repo.clone_from(f"{settings.repository_url}", tempdir, branch="main", depth=1)
 
     logger.debug("Collect all templates from database.")
     templates = session.query(models.Template).all()
@@ -141,7 +132,7 @@ async def update_database(
     for template in [x for x in templates if x.repoFile in to_update]:
         _update_template(session, template, pathlib.Path(tempdir))
 
-    logger.debug("Committing changes to database.")
+    logger.debug("Commit changes to database.")
     session.commit()
 
 

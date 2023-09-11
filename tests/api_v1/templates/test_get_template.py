@@ -1,20 +1,19 @@
-# pylint: disable=missing-module-docstring,redefined-outer-name
-from typing import Dict
+"""Tests for GET /api/v1/templates/{uuid} endpoint."""
+# pylint: disable=redefined-outer-name
+from unittest.mock import Mock
 
 import pytest
-from fastapi import Response
-from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="module")
-def response(client: TestClient, template_uuid: str, headers: Dict) -> None:
+def response(client, template_uuid, headers):
     """Performs a POST request to create a database."""
     response = client.get(f"/api/v1/templates/{template_uuid}", headers=headers)
     return response
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_200_ok(response: Response) -> None:
+def test_200_ok(response):
     """Tests the response status code is 200 and valid."""
     # Assert response is valid
     assert response.status_code == 200
@@ -32,7 +31,7 @@ def test_200_ok(response: Response) -> None:
 
 
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)
-def test_404_not_found(response: Response) -> None:
+def test_404_not_found(response):
     """Tests the response status code is 404 and valid."""
     # Assert response is valid
     assert response.status_code == 404
@@ -44,7 +43,7 @@ def test_404_not_found(response: Response) -> None:
 
 
 @pytest.mark.parametrize("template_uuid", ["bad_uuid"], indirect=True)
-def test_422_validation_error(response: Response) -> None:
+def test_422_validation_error(response):
     """Tests the response status code is 422 and valid."""
     # Assert response is valid
     assert response.status_code == 422
@@ -56,9 +55,9 @@ def test_422_validation_error(response: Response) -> None:
     assert message["detail"][0]["input"] == "bad_uuid"
 
 
-@pytest.mark.usefixtures("patch_session_get_error")
+@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_500_server_error(response: Response) -> None:
+def test_500_database_error(response):
     """Tests the response status code is 500 and valid."""
     # Assert response is valid
     assert response.status_code == 500

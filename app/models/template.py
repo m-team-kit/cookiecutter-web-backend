@@ -9,8 +9,8 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.core.database import Base
 from app import utils
+from app.database import Base
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401

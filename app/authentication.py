@@ -1,49 +1,34 @@
-# pylint: disable=missing-module-docstring
+"""Authentication module."""
 import logging
-import tempfile
 from typing import Generator
 
-from fastapi import Depends, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from flaat.exceptions import FlaatForbidden, FlaatUnauthenticated
+from flaat.fastapi import Flaat
 from sqlalchemy.orm import Session
 
-from app import models
+from app import config, database, models
+from app.config import Settings
 
 logger = logging.getLogger(__name__)
 bearer_token = HTTPBearer(auto_error=False)
 bearer_secret = HTTPBearer(auto_error=False)
 
 
-async def get_session(
-        request: Request
-) -> Generator:  # fmt: skip
-    """Yield database session generator."""
-
-    try:
-        logger.debug("Creating database session.")
-        database_session = request.app.state.SessionLocal()
-        yield database_session
-
-    finally:
-        logger.debug("Closing database session.")
-        database_session.close()
-
-
-async def temp_folder() -> Generator:
-    """Yield temporary folder generator."""
-
-    logger.debug("Creating temporary folder.")
-    with tempfile.TemporaryDirectory() as tempdir:
-        yield tempdir
-        logger.debug("Removing temporary folder.")
+def init_app(app: FastAPI) -> None:
+    """Initialize security configuration."""
+    settings: Settings = app.state.settings
+    app.state.flaat = Flaat()
+    op_list = [str(x) for x in settings.trusted_op]
+    app.state.flaat.set_trusted_OP_list(op_list)
 
 
 async def get_user(
     request: Request,
-    session: Session = Depends(get_session),
+    session: Session = Depends(database.get_session),
     token: HTTPAuthorizationCredentials = Depends(bearer_token),
-) -> models.User:
+) -> Generator:
     """Returns user from token."""
 
     logger.debug("If no token present raise Unauthenticated.")
@@ -65,11 +50,11 @@ async def get_user(
         session.add(user)
         session.commit()
 
-    return user
+    yield user
 
 
 async def check_secret(
-    request: Request,
+    settings: Settings = Depends(config.get_settings),
     secret: HTTPAuthorizationCredentials = Depends(bearer_secret),
 ) -> None:
     """Checks if secret is correct."""
@@ -79,7 +64,6 @@ async def check_secret(
         raise FlaatUnauthenticated("Not authenticated")
 
     logger.debug("Checking secret.")
-    correct = request.app.state.settings.secret == secret.credentials
-    if not correct:
+    if settings.admin_secret != secret.credentials:
         logger.debug("Incorrect secret.")
         raise FlaatForbidden("Incorrect secret")

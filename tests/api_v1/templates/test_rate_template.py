@@ -1,13 +1,12 @@
-# pylint: disable=missing-module-docstring,redefined-outer-name
-from typing import Dict
+"""Tests for rate_template API endpoint."""
+# pylint: disable=redefined-outer-name
+from unittest.mock import Mock
 
 import pytest
-from fastapi import Response
-from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="module")
-def response(client: TestClient, template_uuid: str, headers: Dict, body: int) -> None:
+def response(client, template_uuid, headers, body):
     """Performs a POST request to create a database."""
     response = client.put(f"/api/v1/templates/{template_uuid}/score", content=body, headers=headers)
     return response
@@ -15,8 +14,8 @@ def response(client: TestClient, template_uuid: str, headers: Dict, body: int) -
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
-def test_200_updated_by_user_1(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_200_updated_by_user_1(response):
     """Tests the response status code is 200 and valid."""
     # Assert response is valid
     assert response.status_code == 200
@@ -36,8 +35,8 @@ def test_200_updated_by_user_1(response: Response) -> None:
 
 @pytest.mark.parametrize("template_uuid", ["uuid_3"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
-def test_201_created_by_user_1(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_201_created_by_user_1(response):
     """Tests the response status code is 201 and valid."""
     # Assert response is valid
     assert response.status_code == 201
@@ -57,8 +56,8 @@ def test_201_created_by_user_1(response: Response) -> None:
 
 @pytest.mark.parametrize("template_uuid", ["uuid_4"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer new_user-token"}], indirect=True)
-def test_201_created_by_new_user(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["new_user-token"], indirect=True)
+def test_201_created_by_new_user(response):
     """Tests the response status code is 201 and valid."""
     # Assert response is valid
     assert response.status_code == 201
@@ -78,8 +77,8 @@ def test_201_created_by_new_user(response: Response) -> None:
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer bad-token"}, {}], indirect=True)
-def test_401_unauthorized(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["bad-token", None], indirect=True)
+def test_401_unauthorized(response):
     """Tests the response status code is 401 and valid."""
     # Assert response is valid
     assert response.status_code == 401
@@ -94,8 +93,8 @@ def test_401_unauthorized(response: Response) -> None:
 
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
-def test_404_not_found(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_404_not_found(response):
     """Tests the response status code is 404 and valid."""
     # Assert response is valid
     assert response.status_code == 404
@@ -108,8 +107,8 @@ def test_404_not_found(response: Response) -> None:
 
 @pytest.mark.parametrize("template_uuid", ["bad_uuid"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
-def test_422_bad_uuid(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_422_bad_uuid(response):
     """Tests the response status code is 422 and valid."""
     # Assert response is valid
     assert response.status_code == 422
@@ -122,8 +121,8 @@ def test_422_bad_uuid(response: Response) -> None:
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", ["a"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
-def test_422_bad_score(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_422_bad_score(response):
     """Tests the response status code is 422 and valid."""
     # Assert response is valid
     assert response.status_code == 422
@@ -134,11 +133,11 @@ def test_422_bad_score(response: Response) -> None:
     assert "JSON decode error" in message["detail"][0]["msg"]
 
 
-@pytest.mark.usefixtures("patch_session_get_error")
+@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer user_1-token"}], indirect=True)
-def test_500_server_error(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_500_database_error(response):
     """Tests the response status code is 500 and valid."""
     # Assert response is valid
     assert response.status_code == 500
