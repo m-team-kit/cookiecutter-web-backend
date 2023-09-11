@@ -1,9 +1,9 @@
 services:
   backend:
     image: backend:development
-    restart: no
-    depends_on:
-      - database
+    env_file: [.env]
+    environment:
+      POSTGRES_HOST: database
     volumes:
       - .:/app
     ports:
@@ -14,22 +14,37 @@ services:
       target: development
 
   database:
-    image: postgres:15
-    restart: no
+    image: postgres:latest
+    env_file: [.env]
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-some_password}
+      POSTGRES_USER: ${POSTGRES_USER:-db_user}
+      POSTGRES_DB: ${POSTGRES_DB:-db_name}
+    volumes:
+      - ./scripts/setup_migration.sql:/docker-entrypoint-initdb.d/0-setup_migration.sql
+      - ./scripts/setup_sandbox.sql:/docker-entrypoint-initdb.d/1-setup_sandbox.sql
+      - ./data/pgdata:/var/lib/postgresql/data/pgdata
     ports:
       - 5432:5432
 
+  smtp_server:
+    image: boky/postfix:latest
+    env_file: [.env]
+    ports:
+      - 587:587
+
   pgadmin:
     image: dpage/pgadmin4
-    restart: no
     depends_on:
       - database
+    env_file: [.env]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USERNAME}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     volumes:
       - app-pgadmin:/var/lib/pgadmin
-    env_file:
-      - .env
     ports:
-      - 5050:80
+      - 8050:80
 
 volumes:
   app-pgadmin:

@@ -66,65 +66,60 @@ $ docker compose -f docker-compose.yml -f compose/production.yml up -d
 
 See [Use Compose in production](https://docs.docker.com/compose/production/) for more information.
 
-This will run the application following the configuration in `compose.yml` and `production.yml` files.
-It automatically loads the environment variables from the `.env` file and creates a postgres database.
-
-If it is the first time you run the application or you have modified the models, you need to run the migrations.
-
-```bash
-$ docker compose -f docker-compose.yml -f compose/production.yml run --rm backend alembic upgrade head
-```
-
-For more details about the migrations, you can access [README](alembic/README.md) inside the `alembic` folder.
+This will run the application following the configuration in `compose.yml` and `production.yml` files. It automatically loads the environment variables from the `.env` file and creates a postgres database.
 
 ## Testing
 
-There are multiple ways to run the tests. The standard way is to use `tox`:
+Tests are implemented using [pytest](https://docs.pytest.org/en/latest/). The tests are designed to run on the integration layer, therefore they require a database and an smtp server running.
+
+There are multiple ways to run the tests. The standard way is to use `docker compose`:
 
 ```bash
-$ tox
+$ docker compose -f docker-compose.yml -f compose/testing.yml up --rm --exit-code-from backend
 ```
 
-However, you can also run the tests with `pytest`:
+This will run the tests inside a container with all the required dependencies and services.
 
-```bash
-$ pip install -r requirements.txt -r requirements-test.txt
-$ python -m pytest tests
-```
-
-Or inside docker if you need to test the application in a clean environment:
-
-```bash
-$ docker-compose -f docker-compose.yml -f compose/testing.yml run --rm tests
-```
+> Testing does not read the `.env` file. You need to edit `compose/testing.yml` to set the environment variables.
 
 ## Development
 
-If you need to run the application in local for debugging or development, you need to install the development requirements:
+There are multiple ways and tools that can be used to develop the application. The standard way is to use `docker compose`:
+
+```bash
+$ docker compose -f docker-compose.yml -f compose/development.yml up -d
+```
+
+Then you can attach your debugger to the running container.
+
+```bash
+
+```
+
+For vscode the `launch.json` contains a configuration `Python: Attach backend` to attach the debugger to the running backend.
+
+The `backend` service is configured to do not start until a debugger is attached. Therefore you do not need to use the container to debug your application. You can also use locally `uvicorn`:
 
 ```bash
 $ pip install -r requirements.txt -r requirements-dev.txt
-```
-
-Additionally you will need to start a postgres database. You can use the one in the `docker-compose.yml` file with the following command:
-
-```bash
-$ docker-compose -f docker-compose -f compose/development.yml up -d database
-```
-
-Then you can run the application with the following command:
-
-```bash
 $ uvicorn autoapp:app --reload
 ```
 
 > Note that this does not load the environment variables from the `.env` file. You need to load them with your preferred method.
 
-Or you can simply run the application with docker-compose:
+For vscode the `launch.json` contains a configuration `Python: FastAPI` to directly lunch the application in local.
+
+## Coverage and other tools
+
+You can get extended testing features by running tox:
 
 ```bash
-$ docker-compose -f docker-compose.yml -f compose/development.yml up
+$ tox
 ```
 
-And then attach the debugger to the running container.
-For vscode the `launch.json` contains a configuration `Python: Attach backend` to attach the debugger to the running backend.
+You have the following environments configured:
+
+- `py311`: run tests in python 3.11
+- `qc.cov`: run coverage tests
+- `qc.sec`: run security tests
+- `qc.sty`: run style tests

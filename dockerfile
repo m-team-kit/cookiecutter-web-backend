@@ -30,25 +30,18 @@ RUN python -m pip install -r requirements.txt
 
 USER sid
 EXPOSE 8000
-CMD ["uvicorn", "autoapp:app", "--proxy-headers", "--host", "0.0.0.0"]
+ENTRYPOINT [ "python" ]
+CMD [ "-m", "uvicorn", "autoapp:app", "--proxy-headers", "--host", "0.0.0.0" ]
 
 # ================================= TESTING ====================================
 FROM production AS testing
 USER root
 
-# Install postgresql for testing
-RUN apt-get install -y --no-install-recommends \
-    # Install system updates and tools
-    postgresql && \
-    # Clean up & back to dialog front end
-    apt-get autoremove -y && \
-    apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/*
-
 RUN python -m pip install -r requirements-test.txt
 
 USER sid
-CMD ["python", "-m", "pytest", "tests"]
+ENTRYPOINT [ "python" ]
+CMD ["-m", "pytest", "-n=auto", "--dist=loadscope", "tests"]
 
 # ================================= DEVELOPMENT ================================
 FROM testing AS development
@@ -58,7 +51,5 @@ RUN python -m pip install -r requirements-dev.txt
 
 USER sid
 EXPOSE 5678
-CMD ["python", "-Xfrozen_modules=off", \
-    "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", \
-    "-m", "uvicorn", "autoapp:app", "--reload", "--host", "0.0.0.0" \
-    ]
+ENTRYPOINT ["python", "-Xfrozen_modules=off", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client" ]
+CMD ["-m", "uvicorn", "autoapp:app", "--reload", "--host", "0.0.0.0" ]
