@@ -1,4 +1,5 @@
-# pylint: disable=missing-module-docstring
+"""Application module to load configuration."""
+# pylint: disable=missing-class-docstring
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fastapi import FastAPI, Request
@@ -8,11 +9,10 @@ from starlette.middleware.cors import CORSMiddleware
 
 
 class Settings(BaseSettings, case_sensitive=False):
-    # pylint: disable=missing-class-docstring,missing-function-docstring
+    # pylint: missing-function-docstring
     # pylint: disable=too-few-public-methods,unused-argument
 
     project_name: str
-    domain: str
     favicon_path: str = "favicon.ico"
     repository_url: AnyHttpUrl
 
@@ -34,9 +34,9 @@ class Settings(BaseSettings, case_sensitive=False):
     trusted_op: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
 
     # API secret key to operate database
-    secret: str
+    admin_secret: str
 
-    @validator("secret", pre=True)
+    @validator("admin_secret", pre=True)
     @classmethod
     def secret_quality(cls, value: str) -> str:
         if len(value) < 12:

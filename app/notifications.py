@@ -12,7 +12,7 @@ from app.config import Settings
 logger = logging.getLogger(__name__)
 
 
-def db_created(settings: Settings = Depends(config.get_settings)) -> None:
+async def db_created(settings: Settings = Depends(config.get_settings)) -> None:
     """Send an email to the user when a new database is created."""
     yield  # Notification send if database is created
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as smtp:
@@ -28,7 +28,7 @@ def db_created(settings: Settings = Depends(config.get_settings)) -> None:
         smtp.send_message(message)
 
 
-def db_updated(settings: Settings = Depends(config.get_settings)) -> None:
+async def db_updated(settings: Settings = Depends(config.get_settings)) -> None:
     """Send an email to the user when a new database is updated."""
     yield  # Notification send if database is updated
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as smtp:

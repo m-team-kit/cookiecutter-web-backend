@@ -8,8 +8,7 @@ from fastapi import APIRouter, Body, Depends, Response, status
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
-from app import dependencies as deps
-from app import models
+from app import authentication, database, models
 from app.api_v1 import parameters, schemas
 from app.api_v1.schemas import SortBy
 
@@ -38,8 +37,8 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
     response_model=schemas.Templates,
 )
-async def read_templates(
-    session: Session = Depends(deps.get_session),
+async def list_templates(
+    session: Session = Depends(database.get_session),
     language: str = parameters.language,
     tags: List[str] = parameters.tags,
     keywords: List[str] = parameters.keywords,
@@ -111,9 +110,9 @@ async def read_templates(
     status_code=status.HTTP_200_OK,
     response_model=schemas.Template,
 )
-async def read_template(
+async def get_template(
     uuid: UUID = parameters.template_uuid,
-    session: Session = Depends(deps.get_session),
+    session: Session = Depends(database.get_session),
 ) -> schemas.Template:
     """
     Use this method to retrieve details about the specific template.
@@ -164,8 +163,8 @@ async def rate_template(
     response: Response,
     uuid: UUID = parameters.template_uuid,
     score: float = Body(),
-    current_user: models.User = Depends(deps.get_user),
-    session: Session = Depends(deps.get_session),
+    current_user: models.User = Depends(authentication.get_user),
+    session: Session = Depends(database.get_session),
 ) -> schemas.Template:
     """
     Use this method to update the score/rating of the specific template.
@@ -197,6 +196,8 @@ async def rate_template(
 
     logger.debug("Committing changes to database.")
     session.add(template)
+
+    logger.debug("Commit changes to database.")
     session.commit()
 
     logger.debug("Returning template.")

@@ -1,19 +1,26 @@
-# pylint: disable=missing-module-docstring
+"""Database configuration, methods, baseModels and dependencies."""
+import logging
 import re
+from typing import Generator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, declared_attr, sessionmaker
 
 from app.config import Settings
 
+logger = logging.getLogger(__name__)
+
 
 def init_app(app: FastAPI) -> None:
-    """Initialize database configuration."""  # Disconnect Handling - Pessimistic
+    """Initialize database configuration."""
     # pylint: disable=invalid-name
     settings: Settings = app.state.settings
-    engine = create_engine(f"{settings.postgres_uri}", pool_pre_ping=True)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    # Disconnect Handling - Pessimistic
+    sql_engine = create_engine(f"{settings.postgres_uri}", pool_pre_ping=True)
+    app.state.sql_engine = sql_engine
+    # Manual flush and commit
+    SessionLocal = sessionmaker(sql_engine, autoflush=False, autocommit=False)
     app.state.SessionLocal = SessionLocal
 
 
@@ -35,3 +42,14 @@ class Base(DeclarativeBase):
     @classmethod
     def __tablename__(cls) -> str:
         return camel_to_snake(cls.__name__)
+
+
+async def get_session(request: Request) -> Generator:
+    """Asynchronous generator to create a database session."""
+    try:
+        logger.debug("Creating database session.")
+        database_session = request.app.state.SessionLocal()
+        yield database_session
+    finally:
+        logger.debug("Closing database session.")
+        database_session.close()

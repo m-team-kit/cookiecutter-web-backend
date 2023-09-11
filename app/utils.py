@@ -1,7 +1,17 @@
-# pylint: disable=missing-module-docstring
+"""Utility functions for the app."""
 import logging
+import tempfile
+from typing import Generator
 
 logger = logging.getLogger(__name__)
+
+
+async def temp_folder() -> Generator:
+    """Asynchronous generator to create a temporary folder."""
+    logger.debug("Creating temporary folder.")
+    with tempfile.TemporaryDirectory() as tempdir:
+        yield tempdir
+        logger.debug("Removing temporary folder.")
 
 
 def score_calculation(template):
