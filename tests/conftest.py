@@ -11,9 +11,7 @@ import flaat
 import pytest
 import sqlalchemy as sa
 from fastapi.testclient import TestClient
-from flaat.exceptions import FlaatUnauthenticated
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
 from starlette.routing import Mount
 
 from app import create_app, database
@@ -37,32 +35,20 @@ def configuration(configuration_path):
 
 @pytest.fixture(scope="session", autouse=True)
 def environment(config):
-    """Patch fixture to set test env variables."""
+    """Patch fixture to set test env variables if not defined."""
     for key, value in config["ENVIRONMENT"].items():
-        os.environ[key] = value
-    return config["ENVIRONMENT"]
+        if key not in os.environ:
+            os.environ[key] = value
 
 
 # Database fixtures -----------------------------------------------------------
 # -----------------------------------------------------------------------------
-db_username = os.environ.get("POSTGRES_USER", "db_user")
-db_password = os.environ.get("POSTGRES_PASSWORD", "db_password")
-db_host = os.environ.get("POSTGRES_HOST", "localhost")
-db_port = os.environ.get("POSTGRES_PORT", "5432")
-db_name = os.environ.get("POSTGRES_DB", "db_name")
-
-
-@pytest.fixture(scope="session")
-def sql_engine():
-    """Returns a database engine of postgresql."""
-    uri = f"postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
-    return sa.create_engine(uri, echo=False, poolclass=NullPool)
 
 
 @pytest.fixture(scope="module")
-def sql_session(sql_engine):
+def sql_session(client):
     """Returns the database session used in the test client methods."""
-    SessionLocal = sessionmaker(sql_engine, autoflush=False, autocommit=False)
+    SessionLocal = sessionmaker(client.app.state.sql_engine, autoflush=False, autocommit=False)
     with SessionLocal() as session:
         session.commit = session.flush  # Make sure to flush instead of commit
         yield session
@@ -82,7 +68,7 @@ def patch_session(request, client, sql_session):
 
 
 @pytest.fixture(scope="module")
-def client(request, sql_session):
+def client(request):
     """Generate application from factories model."""
     custom_parameters = request.param if hasattr(request, "param") else {}
     app = create_app(**custom_parameters)
