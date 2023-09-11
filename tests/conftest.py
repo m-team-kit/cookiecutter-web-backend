@@ -5,25 +5,21 @@ See: https://fastapi.tiangolo.com/tutorial/testing/
 # pylint: disable=unused-argument
 import os
 import tomllib
-from mailbox import Maildir
-from operator import itemgetter
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
-from uuid import UUID
 
 import flaat
 import pytest
 import sqlalchemy as sa
-from aiosmtpd.controller import Controller
-from aiosmtpd.handlers import Mailbox
 from fastapi.testclient import TestClient
 from flaat.exceptions import FlaatUnauthenticated
-from pytest_postgresql.janitor import DatabaseJanitor
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
+from starlette.routing import Mount
 
-from app import create_app, database, models
+from app import create_app, database
+
+# Configuration fixtures ------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 @pytest.fixture(scope="session", params=["config-1"])
@@ -39,103 +35,83 @@ def configuration(configuration_path):
         return tomllib.load(file)
 
 
-@pytest.fixture(scope="session")
-def sql_database(config, postgresql_proc):
-    """Returns a state maintained database of postgresql."""
-    config["DATABASE"]["host"] = postgresql_proc.host
-    config["DATABASE"]["port"] = postgresql_proc.port
-    config["DATABASE"]["user"] = postgresql_proc.user
-    with DatabaseJanitor(**config["DATABASE"]) as database:
-        yield database
-
-
-@pytest.fixture(scope="session")
-def sql_engine(sql_database):
-    """Returns a database engine of postgresql."""
-    authentication = f"{sql_database.user}:{sql_database.password}"
-    netloc = f"{sql_database.host}:{sql_database.port}"
-    connection = f"postgresql+psycopg2://{authentication}@{netloc}/{sql_database.dbname}"
-    return sa.create_engine(connection, echo=False, poolclass=NullPool)
-
-
 @pytest.fixture(scope="session", autouse=True)
-def environment(config, postgresql_proc):
+def environment(config):
     """Patch fixture to set test env variables."""
-    os.environ["POSTGRES_HOST"] = str(postgresql_proc.host)
-    os.environ["POSTGRES_PORT"] = str(postgresql_proc.port)
-    os.environ["POSTGRES_USER"] = str(postgresql_proc.user)
-    os.environ["POSTGRES_PASSWORD"] = config["DATABASE"]["password"]
-    os.environ["POSTGRES_DB"] = config["DATABASE"]["dbname"]
     for key, value in config["ENVIRONMENT"].items():
         os.environ[key] = value
+    return config["ENVIRONMENT"]
+
+
+# Database fixtures -----------------------------------------------------------
+# -----------------------------------------------------------------------------
+db_username = os.environ.get("POSTGRES_USER", "db_user")
+db_password = os.environ.get("POSTGRES_PASSWORD", "db_password")
+db_host = os.environ.get("POSTGRES_HOST", "localhost")
+db_port = os.environ.get("POSTGRES_PORT", "5432")
+db_name = os.environ.get("POSTGRES_DB", "db_name")
+
+
+@pytest.fixture(scope="session")
+def sql_engine():
+    """Returns a database engine of postgresql."""
+    uri = f"postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
+    return sa.create_engine(uri, echo=False, poolclass=NullPool)
+
+
+@pytest.fixture(scope="module")
+def sql_session(sql_engine):
+    """Returns the database session used in the test client methods."""
+    SessionLocal = sessionmaker(sql_engine, autoflush=False, autocommit=False)
+    with SessionLocal() as session:
+        session.commit = session.flush  # Make sure to flush instead of commit
+        yield session
 
 
 @pytest.fixture(scope="module", autouse=True)
-def create_all(sql_engine):
-    """Create all tables in the database."""
-    database.Base.metadata.create_all(bind=sql_engine)
-    with sql_engine.connect() as connection:
-        with open("tests/setup_db.sql", encoding="utf-8") as file:
-            query = sa.text(file.read())
-        connection.execute(query)
-        connection.commit()
-    yield
-    database.Base.metadata.drop_all(bind=sql_engine)
+def patch_session(request, client, sql_session):
+    """Patch database.get_session with mock returning sql_session."""
+    mock = request.param if hasattr(request, "param") else sql_session
+    for mount in client.app.routes:
+        if isinstance(mount, Mount):
+            mount.app.dependency_overrides[database.get_session] = lambda: mock
+
+
+# Request parametrization fixtures --------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 @pytest.fixture(scope="module")
-def session_generator(sql_engine):
-    """Returns a database session generator of postgresql."""
-    return sessionmaker(autocommit=False, autoflush=False, bind=sql_engine)
-
-
-@pytest.fixture(scope="module", name="mailbox", autouse=True)
-def smtp_server(config):
-    """Fixture to provide each testing SMTP server."""
-    with TemporaryDirectory() as tempdir:
-        maildir_path = os.path.join(tempdir, "maildir")
-        controller = Controller(Mailbox(maildir_path), **config["SMTP"])
-        controller.start()
-        yield Maildir(maildir_path, create=False)
-        controller.stop()
-
-
-@pytest.fixture(scope="module", name="custom")
-def custom_settings(request):
-    """Fixture to provide each testing custom configuration values."""
-    return request.param if hasattr(request, "param") else {}
-
-
-@pytest.fixture(scope="module")
-def app(custom):
+def client(request, sql_session):
     """Generate application from factories model."""
-    return create_app(**custom)
-
-
-@pytest.fixture(scope="module")
-def client(app):
-    """Produce test client from application instance."""
+    custom_parameters = request.param if hasattr(request, "param") else {}
+    app = create_app(**custom_parameters)
     return TestClient(app)
 
 
 @pytest.fixture(scope="module", name="query")
 def query_parameters(request):
     """Fixture to provide each testing query parameters."""
-    return request.param if hasattr(request, "param") else {}
+    return request.param if hasattr(request, "param") else None
 
 
 @pytest.fixture(scope="module", name="headers")
-def header_parameters(request):
+def header_parameters(authorization_bearer):
     """Fixture to provide each testing header."""
-    return request.param if hasattr(request, "param") else {}
+    headers = {}  # Create empty headers to fill with fixtures
+    if authorization_bearer:
+        headers["Authorization"] = f"Bearer {authorization_bearer}"
+    return headers if headers else None
 
 
 @pytest.fixture(scope="module", name="body")
 def body_parameters(request):
     """Fixture to provide each testing body."""
-    return request.param if hasattr(request, "param") else {}
+    return request.param if hasattr(request, "param") else None
 
 
+# Fixture options for template uuid -------------------------------------------
+# -----------------------------------------------------------------------------
 template_options = {
     "uuid_1": "bced037a-a326-425d-aa03-5d3cbc9aa3d1",
     "uuid_2": "ef231acb-0ff9-4391-ab18-6cb2698b0985",
@@ -147,43 +123,26 @@ template_options = {
 
 
 @pytest.fixture(scope="module")
-def template_uuid(request) -> UUID:
+def template_uuid(request):
     """Returns template UUID from setup_db.sql."""
     return template_options[request.param]
 
 
-@pytest.fixture(scope="module")
-def templates(response, session_generator):
-    """Fixture to provide database templates after request."""
-    with session_generator() as session:
-        templates = session.query(models.Template).all()
-        yield {Path(t.repoFile).stem: t for t in templates}
-
-
-@pytest.fixture(scope="module")
-def notifications(response, mailbox):
-    """Fixture to provide email notifications after request."""
-    return sorted(mailbox, key=itemgetter("subject"))
-
-
-@pytest.fixture(scope="module", autouse=True)
-def patch_flaat():
-    """Patch fixture to set test env variables."""
-    with patch.object(flaat.BaseFlaat, "get_user_infos_from_access_token", side_effect=user_patch):
-        yield
-
-
-user_options = {
-    "user_1-token": Mock(subject="user_1", issuer="issuer_1"),
-    "user_2-token": Mock(subject="user_2", issuer="issuer_1"),
-    "new_user-token": Mock(subject="user_3", issuer="issuer_2"),
-    "bad-token": None,
+# Fixture options for users ---------------------------------------------------
+# -----------------------------------------------------------------------------
+authentication_options = {
+    "user_1-token": {"subject": "user_1", "issuer": "issuer_1"},
+    "user_2-token": {"subject": "user_2", "issuer": "issuer_1"},
+    "new_user-token": {"subject": "user_3", "issuer": "issuer_2"},
 }
 
 
-def user_patch(access_token: str, issuer_hint: str = ""):
-    """Patch fixture that returns mocked token information."""
-    try:
-        return user_options[access_token]
-    except KeyError:
-        raise FlaatUnauthenticated() from None
+@pytest.fixture(scope="module")
+def authorization_bearer(request):
+    """Patches the token information for the user."""
+    if hasattr(request, "param") and request.param in authentication_options:
+        get_info = lambda _: Mock(**authentication_options[request.param])
+        with patch.object(flaat.BaseFlaat, "get_user_infos_from_access_token", side_effect=get_info):
+            yield request.param
+    else:
+        yield request.param if hasattr(request, "param") else None

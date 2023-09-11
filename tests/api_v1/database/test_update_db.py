@@ -1,25 +1,22 @@
-# pylint: disable=missing-module-docstring,redefined-outer-name
-from typing import Dict, List
+"""Tests for the update_db endpoint."""
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
+from unittest.mock import Mock
 from uuid import UUID
 
 import pytest
-from fastapi import Response
-from fastapi.testclient import TestClient
-
-from app.models.template import Template
 
 
 @pytest.fixture(scope="module")
-def response(client: TestClient, headers: Dict) -> None:
+def response(client, headers, patch_repository):
     """Performs a POST request to update a database."""
     response = client.post("/api/v1/db:update", headers=headers)
     return response
 
 
-@pytest.mark.usefixtures("patch_repository")
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_204_no_content(response: Response, templates: List[Template]) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_204_no_content(response, templates):
     """Tests the response status code is 204 and valid."""
     # Assert response is valid
     assert response.status_code == 204
@@ -44,21 +41,9 @@ def test_204_no_content(response: Response, templates: List[Template]) -> None:
     assert templates["my_template_5"].score is None
 
 
-@pytest.mark.usefixtures("patch_repository")
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_204_notification(config, notifications) -> None:
-    """Tests the response status code is 204 and valid."""
-    assert "DB Updated" in notifications[0]["subject"]
-    assert notifications[0]["from"] == config["ENVIRONMENT"]["NOTIFICATIONS_SENDER"]
-    assert notifications[0]["to"] == config["ENVIRONMENT"]["NOTIFICATIONS_TARGET"]
-    assert "DB Updated" in notifications[0].get_payload()
-
-
-@pytest.mark.usefixtures("patch_repository")
-@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
-@pytest.mark.parametrize("headers", [{}], indirect=True)
-def test_401_unauthorized(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", [None], indirect=True)
+def test_401_unauthorized(response):
     """Tests the response status code is 401 and valid."""
     # Assert response is valid
     assert response.status_code == 401
@@ -71,10 +56,9 @@ def test_401_unauthorized(response: Response) -> None:
     assert "Not authenticated" in message["detail"][0]["msg"]
 
 
-@pytest.mark.usefixtures("patch_repository")
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer bad-secret"}], indirect=True)
-def test_403_forbidden(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["bad-secret"], indirect=True)
+def test_403_forbidden(response):
     """Tests the response status code is 403 and valid."""
     # Asset response is valid
     assert response.status_code == 403
@@ -85,11 +69,23 @@ def test_403_forbidden(response: Response) -> None:
     assert "Incorrect secret" in message["detail"][0]["msg"]
 
 
-@pytest.mark.usefixtures("patch_repository")
 @pytest.mark.parametrize("patch_repository", ["repository_down"], indirect=True)
-@pytest.mark.parametrize("headers", [{"authorization": "bearer 6de44315b565ea73f778282d"}], indirect=True)
-def test_500_server_error(response: Response) -> None:
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_500_repository_down(response):
     """Tests the response status code is 500 and valid.""" ""
+    # Assert response is valid
+    assert response.status_code == 500
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "server_error"
+    assert message["detail"][0]["loc"] == ["server"]
+    assert message["detail"][0]["msg"] == "Internal Server Error"
+
+
+@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_500_database_error(response):
+    """Tests the response status code is 500 and valid."""
     # Assert response is valid
     assert response.status_code == 500
     # Assert message is valid

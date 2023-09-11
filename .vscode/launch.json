@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python: FastAPI",
             "type": "python",
@@ -39,6 +40,21 @@
             "args": [
                 "upgrade",
                 "head"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Alembic migration",
+            "type": "python",
+            "request": "launch",
+            "module": "alembic",
+            "args": [
+                "upgrade",
+                "head",
+                "--sql",
+                ">",
+                "scripts/setup_migration.sql"
             ],
             "envFile": "${workspaceFolder}/.env",
             "justMyCode": true

@@ -8,13 +8,16 @@ import pytest
 import app.api_v1.endpoints.project
 
 
-@pytest.fixture(scope="module", params=[])
+@pytest.fixture(scope="module", autouse=True)
 def patch_fields_url(request):
     """Patch fixture to replace request response from cookiecutter.json."""
-    with patch.object(urllib.request, "Request", MagicMock()):
-        patch_function = urlopen_patch_gen(request.param)
-        with patch.object(urllib.request, "urlopen", side_effect=patch_function):
-            yield
+    if hasattr(request, "param"):
+        with patch.object(urllib.request, "Request", MagicMock()):
+            patch_function = urlopen_patch_gen(request.param)
+            with patch.object(urllib.request, "urlopen", side_effect=patch_function):
+                yield
+    else:
+        yield
 
 
 def urlopen_patch_gen(folder):
@@ -34,13 +37,16 @@ def urlopen_patch_gen(folder):
     return urlopen_patch
 
 
-@pytest.fixture(scope="module", params=[])
+@pytest.fixture(scope="module", autouse=True)
 def patch_cookiecutter(request):
     """Patch fixture to replace cookiecutter template from a link."""
-    original_cookiecutter = app.api_v1.endpoints.project.cookiecutter
-    with patch.object(app.api_v1.endpoints.project, "cookiecutter", MagicMock()) as mock:
-        folder = f"tests/cookiecutters/{request.param}"
-        mock.side_effect = cookiecutter_path_gen(folder, original_cookiecutter)
+    if hasattr(request, "param"):
+        original_cookiecutter = app.api_v1.endpoints.project.cookiecutter
+        with patch.object(app.api_v1.endpoints.project, "cookiecutter", MagicMock()) as mock:
+            folder = f"tests/cookiecutters/{request.param}"
+            mock.side_effect = cookiecutter_path_gen(folder, original_cookiecutter)
+            yield
+    else:
         yield
 
 

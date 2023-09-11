@@ -1,20 +1,16 @@
 [ENVIRONMENT]
-PROJECT_NAME = "test-fastapi"
-REPOSITORY_URL = "https://some-repo.git"
-BACKEND_CORS_ORIGINS = '["http://localhost"]'
-TRUSTED_OP_LIST = '["https://aai-dev.egi.eu/auth/realms/egi"]'
-SECRET = "6de44315b565ea73f778282d"
-SMTP_HOST = "127.0.0.1"
-SMTP_PORT = "8587"
-NOTIFICATIONS_SENDER = "info@templates.cloud.ai4eosc.eu"
-NOTIFICATIONS_TARGET = "target@example.eu"
-
-[DATABASE]
-dbname = "test_database"
-password = "test_password"
-version = 12.15
-connection_timeout = 60
-
-[SMTP]
-hostname = "127.0.0.1"
-port = 8587
+project_name = "test-fastapi"
+favicon_path = "favicon.ico"
+repository_url = "https://some-repo.git"
+cors_origins = '["http://localhost"]'
+trusted_op_list = '["https://aai-dev.egi.eu/auth/realms/egi"]'
+admin_secret = "6de44315b565ea73f778282d"
+postgres_host = "localhost"
+postgres_user = "db_user"
+postgres_password = "db_password"
+postgres_port = "5432"
+postgres_db = "db_name"
+notifications_sender = "info@templates.cloud.ai4eosc.eu"
+notifications_target = "target@example.eu"
+smtp_host = "localhost"
+smtp_port = "8587"
