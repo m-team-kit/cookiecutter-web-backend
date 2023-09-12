@@ -1,7 +1,5 @@
 """Tests for the list templates endpoint."""
 # pylint: disable=redefined-outer-name
-from unittest.mock import Mock
-
 import pytest
 
 
@@ -83,7 +81,7 @@ def test_422_bad_sortby(response):
     assert "Value error, Invalid sort by option" in message["detail"][0]["msg"]
 
 
-@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
+@pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 def test_500_database_error(response):
     """Tests the response status code is 500 and valid."""
     # Assert response is valid
