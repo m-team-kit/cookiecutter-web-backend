@@ -19,11 +19,10 @@ from app import create_app, database
 # -----------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", params=["simple", "notifications"])
 def configuration_path(request):
     """Fixture to provide each testing configuration path."""
-    config_stem = request.param if hasattr(request, "param") else "standard-configuration"
-    return f"tests/configurations/{config_stem}.toml"
+    return f"tests/configurations/{request.param}.toml"
 
 
 @pytest.fixture(scope="session", name="config")
@@ -46,7 +45,7 @@ def environment(config):
 
 
 @pytest.fixture(scope="module")
-def sql_session(client):
+def sql_session(client, environment):
     """Returns the database session used in the test client methods."""
     # pylint: disable=invalid-name
     SessionLocal = orm.sessionmaker(client.app.state.sql_engine, autoflush=False, autocommit=False)
