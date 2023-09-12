@@ -26,6 +26,8 @@
         "xdist"
     ],
     "python.testing.pytestArgs": [
+        "--numprocesses=auto",
+        "--dist=loadscope",
         "tests"
     ],
     "python.testing.unittestEnabled": false,
