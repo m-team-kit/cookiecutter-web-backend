@@ -5,7 +5,7 @@ See: https://fastapi.tiangolo.com/tutorial/testing/
 # pylint: disable=unused-argument
 import os
 import tomllib
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import flaat
 import pytest
@@ -19,10 +19,11 @@ from app import create_app, database
 # -----------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="session", params=["config-1"])
+@pytest.fixture(scope="session")
 def configuration_path(request):
     """Fixture to provide each testing configuration path."""
-    return f"tests/configurations/{request.param}.toml"
+    config_stem = request.param if hasattr(request, "param") else "standard-configuration"
+    return f"tests/configurations/{config_stem}.toml"
 
 
 @pytest.fixture(scope="session", name="config")
