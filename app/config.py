@@ -1,9 +1,9 @@
 """Application module to load configuration."""
 # pylint: disable=missing-class-docstring
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Optional, Union
 
 from fastapi import FastAPI, Request
-from pydantic import AnyHttpUrl, HttpUrl, PostgresDsn, validator, model_validator
+from pydantic import AnyHttpUrl, HttpUrl, PostgresDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings
 from starlette.middleware.cors import CORSMiddleware
 
@@ -19,11 +19,11 @@ class Settings(BaseSettings, case_sensitive=False):
     # `cors_origins` is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
-    cors_origins: List[AnyHttpUrl] = []
+    cors_origins: list[AnyHttpUrl] = []
 
-    @validator("cors_origins", pre=True)
+    @field_validator("cors_origins")
     @classmethod
-    def assemble_cors_origins(cls, value: Union[str, List[str]]) -> Union[List[str], str]:
+    def assemble_cors_origins(cls, value: Union[str, list[str]]) -> Union[list[str], str]:
         if isinstance(value, str) and not value.startswith("["):
             return [i.strip() for i in value.split(",")]
         if isinstance(value, (list, str)):
@@ -31,12 +31,12 @@ class Settings(BaseSettings, case_sensitive=False):
         raise ValueError(value)
 
     # List of trusted OpenID Connect providers
-    trusted_op: Set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
+    trusted_op: set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
 
     # API secret key to operate database
     admin_secret: str
 
-    @validator("admin_secret", pre=True)
+    @field_validator("admin_secret")
     @classmethod
     def secret_quality(cls, value: str) -> str:
         if len(value) < 12:
@@ -48,18 +48,14 @@ class Settings(BaseSettings, case_sensitive=False):
     postgres_password: str
     postgres_db: str = "application"
     postgres_port: int = 5432
-    postgres_uri: Optional[PostgresDsn] = None
 
-    @validator("postgres_uri", pre=True)
-    @classmethod
-    def assemble_db_connection(cls, value: Optional[str], values: Dict[str, Any]) -> Any:
-        if isinstance(value, str):
-            return value
-        password = values.get("postgres_password")
-        user = values.get("postgres_user")
-        host = values.get("postgres_host")
-        port = values.get("postgres_port")
-        path = values.get("postgres_db")
+    @property
+    def postgres_uri(self) -> PostgresDsn:
+        password = self.postgres_password
+        user = self.postgres_user
+        host = self.postgres_host
+        port = self.postgres_port
+        path = self.postgres_db
         return f"postgresql://{user}:{password}@{host}:{port}/{path}"
 
     notifications_sender: Optional[str] = None
