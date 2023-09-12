@@ -1,7 +1,5 @@
 """Tests for rate_template API endpoint."""
 # pylint: disable=redefined-outer-name
-from unittest.mock import Mock
-
 import pytest
 
 
@@ -133,7 +131,7 @@ def test_422_bad_score(response):
     assert "JSON decode error" in message["detail"][0]["msg"]
 
 
-@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
+@pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)

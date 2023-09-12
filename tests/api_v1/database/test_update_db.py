@@ -1,7 +1,6 @@
 """Tests for the update_db endpoint."""
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
-from unittest.mock import Mock
 from uuid import UUID
 
 import pytest
@@ -82,7 +81,7 @@ def test_500_repository_down(response):
     assert message["detail"][0]["msg"] == "Internal Server Error"
 
 
-@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
+@pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
 def test_500_database_error(response):
     """Tests the response status code is 500 and valid."""

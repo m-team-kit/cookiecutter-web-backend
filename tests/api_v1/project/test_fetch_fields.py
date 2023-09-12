@@ -1,7 +1,5 @@
 """Tests for the fetch_fields endpoint."""
 # pylint: disable=redefined-outer-name
-from unittest.mock import Mock
-
 import pytest
 
 
@@ -107,7 +105,7 @@ def test_500_repository_down(response):
     assert message["detail"][0]["msg"] == "Internal Server Error"
 
 
-@pytest.mark.parametrize("patch_session", [Mock(side_effect=Exception("error"))], indirect=True)
+@pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 def test_500_database_error(response):
     """Tests the response status code is 500 and valid."""

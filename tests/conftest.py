@@ -5,13 +5,12 @@ See: https://fastapi.tiangolo.com/tutorial/testing/
 # pylint: disable=unused-argument
 import os
 import tomllib
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import flaat
 import pytest
-import sqlalchemy as sa
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import orm
 from starlette.routing import Mount
 
 from app import create_app, database
@@ -48,7 +47,8 @@ def environment(config):
 @pytest.fixture(scope="module")
 def sql_session(client):
     """Returns the database session used in the test client methods."""
-    SessionLocal = sessionmaker(client.app.state.sql_engine, autoflush=False, autocommit=False)
+    # pylint: disable=invalid-name
+    SessionLocal = orm.sessionmaker(client.app.state.sql_engine, autoflush=False, autocommit=False)
     with SessionLocal() as session:
         session.commit = session.flush  # Make sure to flush instead of commit
         yield session
@@ -57,7 +57,12 @@ def sql_session(client):
 @pytest.fixture(scope="module", autouse=True)
 def patch_session(request, client, sql_session):
     """Patch database.get_session with mock returning sql_session."""
-    mock = request.param if hasattr(request, "param") else sql_session
+    if hasattr(request, "param") and isinstance(request.param, Exception):
+        mock = Mock(orm.Session, side_effect=request.param)
+        mock.query.side_effect = request.param
+        mock.flush.side_effect = request.param
+    else:
+        mock = sql_session
     for mount in client.app.routes:
         if isinstance(mount, Mount):
             mount.app.dependency_overrides[database.get_session] = lambda: mock
