@@ -3,13 +3,13 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fastapi import FastAPI, Request
-from pydantic import AnyHttpUrl, HttpUrl, PostgresDsn, validator
+from pydantic import AnyHttpUrl, HttpUrl, PostgresDsn, validator, model_validator
 from pydantic_settings import BaseSettings
 from starlette.middleware.cors import CORSMiddleware
 
 
 class Settings(BaseSettings, case_sensitive=False):
-    # pylint: missing-function-docstring
+    # pylint: disable=missing-function-docstring
     # pylint: disable=too-few-public-methods,unused-argument
 
     project_name: str
@@ -62,10 +62,16 @@ class Settings(BaseSettings, case_sensitive=False):
         path = values.get("postgres_db")
         return f"postgresql://{user}:{password}@{host}:{port}/{path}"
 
-    notifications_sender: Optional[str]
-    notifications_target: Optional[str]
+    notifications_sender: Optional[str] = None
+    notifications_target: Optional[str] = None
     smtp_port: Optional[int] = 587
     smtp_host: Optional[str] = "postfix"
+
+    @model_validator(mode="after")
+    def target_requires_sender(self) -> "Settings":
+        if self.notifications_target and not self.notifications_sender:
+            raise ValueError("notifications_sender is required if notifications_target is set")
+        return self
 
 
 def set_settings(app: FastAPI, **custom_parameters: dict) -> None:
