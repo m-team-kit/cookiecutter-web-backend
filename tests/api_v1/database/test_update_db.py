@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.fixture(scope="module")
-def response(client, headers, patch_repository):
+def response(client, patch_session, patch_repository, headers):
     """Performs a POST request to update a database."""
     response = client.post("/api/v1/db:update", headers=headers)
     return response
@@ -28,7 +28,7 @@ def test_204_no_content(response, templates):
     assert templates["my_template_1"].repoFile == "my_template_1.json"
     assert templates["my_template_1"].title == "Edited Template 1"
     assert templates["my_template_1"].summary == "Template edited 1"
-    assert templates["my_template_1"].language == "Python"
+    assert templates["my_template_1"].language == "python"
     assert templates["my_template_1"].tags == set(["Tag1", "Tag9"])
     assert templates["my_template_1"].picture == "https://picture-url/template_1"
     assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"

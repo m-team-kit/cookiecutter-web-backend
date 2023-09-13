@@ -1,10 +1,11 @@
 """Tests for the fetch_fields endpoint."""
 # pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 import pytest
 
 
 @pytest.fixture(scope="module")
-def response(client, template_uuid, headers):
+def response(client, patch_session, template_uuid, headers):
     """Performs a POST request to create a database."""
     response = client.get(f"/api/v1/project/{template_uuid}", headers=headers)
     return response
@@ -25,6 +26,7 @@ def test_200_length(response):
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 def test_200_text_field(response):
     """Tests the response status code is 200 and valid."""
+    assert response.status_code == 200
     field = response.json()[0]
     assert field["type"] == "text"
     assert field["name"] == "text_field"
@@ -36,6 +38,7 @@ def test_200_text_field(response):
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 def test_200_composed_field(response):
     """Tests the response status code is 200 and valid."""
+    assert response.status_code == 200
     field = response.json()[1]
     assert field["type"] == "text"
     assert field["name"] == "composed_var"
@@ -47,6 +50,7 @@ def test_200_composed_field(response):
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 def test_200_checkbox_field(response):
     """Tests the response status code is 200 and valid."""
+    assert response.status_code == 200
     field = response.json()[2]
     assert field["type"] == "checkbox"
     assert field["name"] == "checkbox_field"
@@ -58,6 +62,7 @@ def test_200_checkbox_field(response):
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 def test_200_select_field(response):
     """Tests the response status code is 200 and valid."""
+    assert response.status_code == 200
     field = response.json()[3]
     assert field["type"] == "select"
     assert field["name"] == "select_field"

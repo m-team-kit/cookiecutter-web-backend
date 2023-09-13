@@ -1,10 +1,11 @@
 """Tests for GET /api/v1/templates/{uuid} endpoint."""
 # pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 import pytest
 
 
 @pytest.fixture(scope="module")
-def response(client, template_uuid, headers):
+def response(client, patch_session, template_uuid, headers):
     """Performs a POST request to create a database."""
     response = client.get(f"/api/v1/templates/{template_uuid}", headers=headers)
     return response
@@ -21,7 +22,7 @@ def test_200_ok(response):
     assert message["repoFile"] == "my_template_1.json"
     assert message["title"] == "My Template 1"
     assert message["summary"] == "Tests Cookiecutter"
-    assert message["language"] == "Python"
+    assert message["language"] == "python"
     assert sorted(message["tags"]) == ["Tag1", "Tag2"]
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://link-to-be-patched"

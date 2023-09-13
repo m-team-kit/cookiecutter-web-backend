@@ -1,10 +1,11 @@
 """Tests for the list templates endpoint."""
 # pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 import pytest
 
 
 @pytest.fixture(scope="module")
-def response(client, query, headers):
+def response(client, patch_session, query, headers):
     """Performs a POST request to create a database."""
     response = client.get("/api/v1/templates/", params=query, headers=headers)
     return response
@@ -48,7 +49,7 @@ def test_200_title_asc(response):
     assert templates[3]["title"] == "My Template 4"
 
 
-@pytest.mark.parametrize("query", [{"language": "Python"}], indirect=True)
+@pytest.mark.parametrize("query", [{"language": "python"}], indirect=True)
 def test_200_message(response, query):
     """Tests the response status code is 200 and valid."""
     templates = response.json()
