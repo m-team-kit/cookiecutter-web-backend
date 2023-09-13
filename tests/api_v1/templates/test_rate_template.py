@@ -25,7 +25,7 @@ def test_200_updated_by_user_1(response):
     assert message["title"] == "My Template 1"
     assert message["summary"] == "Tests Cookiecutter"
     assert message["language"] == "python"
-    assert sorted(message["tags"]) == ["Tag1", "Tag2"]
+    assert sorted(message["tags"]) == ["tag1", "tag2"]
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://link-to-be-patched"
     assert message["gitCheckout"] == "main"
@@ -46,7 +46,7 @@ def test_201_created_by_user_1(response):
     assert message["title"] == "My Template 3"
     assert message["summary"] == "Template example 3"
     assert message["language"] == "python"
-    assert sorted(message["tags"]) == ["Tag3"]
+    assert sorted(message["tags"]) == ["tag3"]
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://some-git-link/template"
     assert message["gitCheckout"] == "main"

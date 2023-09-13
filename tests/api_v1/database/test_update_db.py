@@ -29,14 +29,14 @@ def test_204_no_content(response, templates):
     assert templates["my_template_1"].title == "Edited Template 1"
     assert templates["my_template_1"].summary == "Template edited 1"
     assert templates["my_template_1"].language == "python"
-    assert templates["my_template_1"].tags == set(["Tag1", "Tag9"])
+    assert templates["my_template_1"].tags == set(["tag1", "tag9"])
     assert templates["my_template_1"].picture == "https://picture-url/template_1"
     assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
     assert templates["my_template_1"].gitCheckout == "dev"
     # Assert scores are correct
-    assert templates["my_template_1"].score is not None
+    assert templates["my_template_1"].score == 4.5
     assert templates["my_template_2"].score is None
-    assert templates["my_template_4"].score is not None
+    assert templates["my_template_4"].score == 5.0
     assert templates["my_template_5"].score is None
 
 

@@ -9,6 +9,7 @@ Create Date: ${create_date}
 # pylint: disable=invalid-name
 import sqlalchemy as sa
 
+import app.database
 from alembic import op
 ${imports if imports else ""}
 

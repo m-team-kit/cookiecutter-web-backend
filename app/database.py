@@ -1,8 +1,10 @@
 """Database configuration, methods, baseModels and dependencies."""
+# pylint: disable=invalid-name
 import logging
 import re
 from typing import Generator
 
+import sqlalchemy.types as types
 from fastapi import FastAPI, Request
 from sqlalchemy import engine, orm
 
@@ -38,6 +40,19 @@ class Base(orm.DeclarativeBase):
     @classmethod
     def __tablename__(cls) -> str:
         return camel_to_snake(cls.__name__)
+
+
+class lower(types.TypeDecorator):
+    """Converts strings to lowercase on the way in."""
+
+    # pylint: disable=too-many-ancestors
+    # pylint: disable=abstract-method
+
+    impl = types.String
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        return value.lower() if value is not None else None
 
 
 def sessionmaker(sql_engine: engine.Engine) -> orm.sessionmaker:
