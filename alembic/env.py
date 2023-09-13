@@ -11,7 +11,7 @@ from app.config import Settings
 config = context.config
 settings = Settings()
 
-# Interpret the config file for Python logging.
+# Interpret the config file for python logging.
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 

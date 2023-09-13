@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.fixture(scope="module")
-def response(client, headers, patch_repository):
+def response(client, patch_session, patch_repository, headers):
     """Performs a POST request to create a database."""
     response = client.post("/api/v1/db:create", headers=headers)
     return response
@@ -15,7 +15,7 @@ def response(client, headers, patch_repository):
 
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
-def test_204_no_content(response, templates):
+def test_204_no_content(response, templates, sql_session):
     """Tests the response status code is 204 and valid."""
     # Assert response is valid
     assert response.status_code == 204
@@ -28,8 +28,8 @@ def test_204_no_content(response, templates):
     assert templates["my_template_1"].repoFile == "my_template_1.json"
     assert templates["my_template_1"].title == "Edited Template 1"
     assert templates["my_template_1"].summary == "Template edited 1"
-    assert templates["my_template_1"].language == "Python"
-    assert templates["my_template_1"].tags == set(["Tag1", "Tag9"])
+    assert templates["my_template_1"].language == "python"
+    assert templates["my_template_1"].tags == set(["tag1", "tag9"])
     assert templates["my_template_1"].picture == "https://picture-url/template_1"
     assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
     assert templates["my_template_1"].gitCheckout == "dev"

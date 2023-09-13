@@ -3,15 +3,15 @@ See: https://fastapi.tiangolo.com/tutorial/testing/
 """
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
+import copy
 import os
 import tomllib
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import flaat
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import orm
-from starlette.routing import Mount
 
 from app import create_app, database
 
@@ -19,7 +19,7 @@ from app import create_app, database
 # -----------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="session", params=["config-1"])
+@pytest.fixture(scope="session", params=["simple", "notifications"])
 def configuration_path(request):
     """Fixture to provide each testing configuration path."""
     return f"tests/configurations/{request.param}.toml"
@@ -45,27 +45,23 @@ def environment(config):
 
 
 @pytest.fixture(scope="module")
-def sql_session(client):
+def sql_session(client, environment):
     """Returns the database session used in the test client methods."""
-    # pylint: disable=invalid-name
-    SessionLocal = orm.sessionmaker(client.app.state.sql_engine, autoflush=False, autocommit=False)
-    with SessionLocal() as session:
-        session.commit = session.flush  # Make sure to flush instead of commit
+    engine = client.app.state.sql_engine  # Use same engine as application
+    with orm.Session(engine, autoflush=False, autocommit=False) as session:
         yield session
 
 
 @pytest.fixture(scope="module", autouse=True)
-def patch_session(request, client, sql_session):
+def patch_session(request, sql_session):
     """Patch database.get_session with mock returning sql_session."""
     if hasattr(request, "param") and isinstance(request.param, Exception):
-        mock = Mock(orm.Session, side_effect=request.param)
-        mock.query.side_effect = request.param
-        mock.flush.side_effect = request.param
+        with patch.object(database, "sessionmaker", side_effect=request.param):
+            yield
     else:
-        mock = sql_session
-    for mount in client.app.routes:
-        if isinstance(mount, Mount):
-            mount.app.dependency_overrides[database.get_session] = lambda: mock
+        with patch.object(database, "sessionmaker", return_value=sql_session):
+            with patch.multiple(sql_session, commit=sql_session.flush, close=lambda: None):
+                yield
 
 
 # Request parametrization fixtures --------------------------------------------

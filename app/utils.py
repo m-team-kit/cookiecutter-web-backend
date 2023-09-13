@@ -14,14 +14,12 @@ async def temp_folder() -> Generator:
         logger.debug("Removing temporary folder.")
 
 
-def score_calculation(template):
+def calculate_score(scores):
     """Calculate the score of a template."""
-    logger.debug("Calculating score of template: %s.", template.repoFile)
-    if len(template.scores) == 0:
-        logger.debug("Template %s has no scores.", template.repoFile)
+    logger.debug("Calculating score average for: %s.", scores)
+    if not scores:
         return None
-    logger.debug("Template %s has %s scores.", template.repoFile, len(template.scores))
-    return sum(score.value for score in template.scores) / len(template.scores)
+    return sum(score.value for score in scores) / len(scores)
 
 
 def parse_fields(fields_data):

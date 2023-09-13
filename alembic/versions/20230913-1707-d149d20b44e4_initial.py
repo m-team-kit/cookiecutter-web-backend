@@ -1,18 +1,20 @@
 """"initial"
 
-Revision ID: ec784700411b
-Revises: None
-Create Date: 2023-09-05 10:00:52.391838
+Revision ID: d149d20b44e4
+Revises: 
+Create Date: 2023-09-13 17:07:12.169536
 
 """
 # pylint: disable=missing-function-docstring
 # pylint: disable=invalid-name
 import sqlalchemy as sa
 
+import app.database
 from alembic import op
 
+
 # revision identifiers, used by Alembic.
-revision = "ec784700411b"
+revision = "d149d20b44e4"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,10 +30,11 @@ def upgrade():
         sa.Column("repoFile", sa.String(), nullable=False),
         sa.Column("title", sa.String(), nullable=False),
         sa.Column("summary", sa.String(), nullable=False),
-        sa.Column("language", sa.String(), nullable=False),
+        sa.Column("language", app.database.lower(), nullable=False),
         sa.Column("picture", sa.String(), nullable=False),
         sa.Column("gitLink", sa.String(), nullable=False),
         sa.Column("gitCheckout", sa.String(), nullable=False),
+        sa.Column("score", sa.Float(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_template_id"), "template", ["id"], unique=False)
@@ -65,7 +68,7 @@ def upgrade():
         "tag",
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("parent_id", sa.UUID(), nullable=False),
-        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("name", app.database.lower(), nullable=False),
         sa.ForeignKeyConstraint(["parent_id"], ["template.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )

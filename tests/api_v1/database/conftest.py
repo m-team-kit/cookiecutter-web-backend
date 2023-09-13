@@ -14,13 +14,7 @@ from app import models
 def templates(response, sql_session):
     """Fixture to provide database templates after request."""
     templates = sql_session.query(models.Template).all()
-    yield {Path(t.repoFile).stem: t for t in templates}
-
-
-@pytest.fixture(scope="module")
-def notifications(response):
-    """Fixture to return notifications."""
-    raise NotImplementedError  # TODO: Implement
+    return {Path(t.repoFile).stem: t for t in templates}
 
 
 @pytest.fixture(scope="module")

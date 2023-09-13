@@ -9,8 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app import utils
-from app.database import Base
+from app.database import Base, lower
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
@@ -23,12 +22,12 @@ class Template(Base):
     repoFile: Mapped[str] = mapped_column(index=True)
     title: Mapped[str] = mapped_column()
     summary: Mapped[str] = mapped_column()
-    language: Mapped[str] = mapped_column(index=True)
+    language: Mapped[str] = mapped_column(lower, index=True)
     picture: Mapped[str] = mapped_column()
     gitLink: Mapped[str] = mapped_column()
     gitCheckout: Mapped[str] = mapped_column()
-    score = hybrid_property(utils.score_calculation)
     scores: Mapped[List["Score"]] = relationship(cascade="all, delete", passive_deletes=True)
+    score: Mapped[float] = mapped_column(nullable=True)
     _tags: Mapped[List["Tag"]] = relationship(collection_class=set, cascade="all, delete-orphan", passive_deletes=True)
 
     @property
@@ -43,7 +42,7 @@ class Template(Base):
 class Tag(Base):
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("template.id", ondelete="CASCADE"))
-    name: Mapped[str] = mapped_column(index=True)
+    name: Mapped[str] = mapped_column(lower, index=True)
 
 
 class Score(Base):

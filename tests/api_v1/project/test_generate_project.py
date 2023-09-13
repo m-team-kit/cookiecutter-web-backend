@@ -1,5 +1,6 @@
 """Tests for the generate project API endpoint.""" ""
 # pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 import io
 import tomllib
 import zipfile
@@ -8,7 +9,7 @@ import pytest
 
 
 @pytest.fixture(scope="module")
-def response(client, template_uuid, headers, body):
+def response(client, patch_session, template_uuid, headers, body):
     """Performs a POST request to create a database."""
     response = client.post(f"/api/v1/project/{template_uuid}:generate", json=body, headers=headers)
     return response

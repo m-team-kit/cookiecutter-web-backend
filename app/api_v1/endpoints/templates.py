@@ -8,7 +8,7 @@ from fastapi import APIRouter, Body, Depends, Response, status
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
-from app import authentication, database, models
+from app import authentication, database, models, utils
 from app.api_v1 import parameters, schemas
 from app.api_v1.schemas import SortBy
 
@@ -50,29 +50,27 @@ async def list_templates(
     """
 
     logger.info("Listing templates with score average.")
-    search = session.query(models.Template, sa.func.avg(models.Score.value).label("score"))
-    search = search.outerjoin(models.Template.scores)
-    search = search.group_by(models.Template.id)
+    search = session.query(models.Template)
 
     logger.debug("Filtering templates by language: %s.", language)
-    if language:
-        search = search.filter(models.Template.language == language)
+    if language:  # Language is case insensitive (always lower)
+        search = search.filter(models.Template.language == language.lower())
 
     logger.debug("Filtering templates by keywords: %s.", keywords)
-    for keyword in keywords:
+    for keyword in keywords:  # Search must include at least each keyword in one field
         search = search.filter(
-            sa.or_(
-                models.Template.title.contains(keyword),
-                models.Template.summary.contains(keyword),
+            sa.or_(  # Keyword can be in title or summary
+                sa.func.lower(models.Template.summary).contains(keyword.lower()),
+                sa.func.lower(models.Template.title).contains(keyword.lower()),
             )
         )
 
     logger.debug("Filtering templates by tags: %s.", tags)
-    if tags:
+    if tags:  # Tags are case insensitive (always lower)
         search = search.join(models.Template._tags)  # pylint: disable=protected-access
-        search = search.filter(models.Tag.name.in_(tags))
+        search = search.filter(models.Tag.name.in_(set(t.lower() for t in tags)))
         search = search.group_by(models.Template.id)
-        search = search.having(sa.func.count(models.Tag.id) == len(tags))  # pylint: disable=E1102
+        search = search.having(sa.func.count(models.Tag.id) == len(set(tags)))  # pylint: disable=E1102
 
     logger.debug("Sorting templates by: %s.", sort_by)
     for sort in sort_by.split(","):
@@ -82,7 +80,7 @@ async def list_templates(
             search = search.order_by(sa.nullslast(sa.asc(sort[1:])))
 
     logger.debug("Returning templates.")
-    return [template for template, _ in search.all()]
+    return search.all()
 
 
 @router.get(
@@ -192,9 +190,9 @@ async def rate_template(
         logger.debug("Adding score to template.")
         score = models.Score(owner_subject=current_user.subject, owner_issuer=current_user.issuer, value=score)
         template.scores.append(score)
-        session.add(template)
 
     logger.debug("Committing changes to database.")
+    template.score = utils.calculate_score(template.scores)
     session.add(template)
 
     logger.debug("Commit changes to database.")

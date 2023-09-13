@@ -5,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> ec784700411b
+-- Running upgrade  -> d149d20b44e4
 
 CREATE TABLE template (
     id UUID NOT NULL, 
@@ -18,6 +18,7 @@ CREATE TABLE template (
     picture VARCHAR NOT NULL, 
     "gitLink" VARCHAR NOT NULL, 
     "gitCheckout" VARCHAR NOT NULL, 
+    score FLOAT, 
     PRIMARY KEY (id)
 );
 
@@ -66,7 +67,7 @@ CREATE INDEX ix_tag_id ON tag (id);
 
 CREATE INDEX ix_tag_name ON tag (name);
 
-INSERT INTO alembic_version (version_num) VALUES ('ec784700411b') RETURNING alembic_version.version_num;
+INSERT INTO alembic_version (version_num) VALUES ('d149d20b44e4') RETURNING alembic_version.version_num;
 
 COMMIT;
 

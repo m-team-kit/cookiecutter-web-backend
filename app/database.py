@@ -1,11 +1,12 @@
 """Database configuration, methods, baseModels and dependencies."""
+# pylint: disable=invalid-name
 import logging
 import re
 from typing import Generator
 
+import sqlalchemy.types as types
 from fastapi import FastAPI, Request
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, declared_attr, sessionmaker
+from sqlalchemy import engine, orm
 
 from app.config import Settings
 
@@ -17,11 +18,8 @@ def init_app(app: FastAPI) -> None:
     # pylint: disable=invalid-name
     settings: Settings = app.state.settings
     # Disconnect Handling - Pessimistic
-    sql_engine = create_engine(f"{settings.postgres_uri}", pool_pre_ping=True)
+    sql_engine = engine.create_engine(f"{settings.postgres_uri}", pool_pre_ping=True)
     app.state.sql_engine = sql_engine
-    # Manual flush and commit
-    SessionLocal = sessionmaker(sql_engine, autoflush=False, autocommit=False)
-    app.state.SessionLocal = SessionLocal
 
 
 camel2snake_pattern = re.compile(r"(?<!^)(?=[A-Z])")
@@ -32,23 +30,42 @@ def camel_to_snake(name: str) -> str:
     return camel2snake_pattern.sub("_", name).lower()
 
 
-class Base(DeclarativeBase):
+class Base(orm.DeclarativeBase):
     """Base class for all models."""
 
     __name__: str
 
     # Generate __tablename__ automatically
-    @declared_attr
+    @orm.declared_attr
     @classmethod
     def __tablename__(cls) -> str:
         return camel_to_snake(cls.__name__)
+
+
+class lower(types.TypeDecorator):
+    """Converts strings to lowercase on the way in."""
+
+    # pylint: disable=too-many-ancestors
+    # pylint: disable=abstract-method
+
+    impl = types.String
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        return value.lower() if value is not None else None
+
+
+def sessionmaker(sql_engine: engine.Engine) -> orm.sessionmaker:
+    """Create a sessionmaker with manual flush and commit."""
+    return orm.Session(bind=sql_engine, autoflush=False, autocommit=False)
 
 
 async def get_session(request: Request) -> Generator:
     """Asynchronous generator to create a database session."""
     try:
         logger.debug("Creating database session.")
-        database_session = request.app.state.SessionLocal()
+        database_session = sessionmaker(request.app.state.sql_engine)
+        logger.debug("Yielding %s.", database_session)
         yield database_session
     finally:
         logger.debug("Closing database session.")

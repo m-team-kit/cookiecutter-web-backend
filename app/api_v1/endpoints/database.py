@@ -153,4 +153,5 @@ def _update_template(session: Session, template: models.Template, dir: pathlib.P
         logger.debug("Updating template %s.", template_kwds)
         for key, value in template_kwds.items():
             setattr(template, key, value)
+        template.score = utils.calculate_score(template.scores)
         session.add(template)
