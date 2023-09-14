@@ -2,11 +2,26 @@
 from typing import Annotated, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, conint
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import TypeAliasType
 
 from app.api_v1 import constants
+from app import utils
+
+
+Score = TypeAliasType("Score", conint(ge=0, le=5))
+SortBy = TypeAliasType("SortBy", Annotated[str, AfterValidator(utils.validate_sort_by)])
+
+
+# class SortBy(str):
+#     @classmethod
+#     def __get_validators__(cls):
+#         yield validate_sort_by
+
+
+# # To replace fixed Generic once Pydantic supports TypeVarTuple
+# SortFields = TypeVarTuple("SortFields")
 
 
 class Template(BaseModel, from_attributes=True):
@@ -75,32 +90,3 @@ class ServerError(BaseModel, from_attributes=True):
 class NotImplemented(BaseModel, from_attributes=True):
     status_code: constants.Status501 = 501
     detail: list[ErrorDetails]
-
-
-def validate_sort_by_field(option, field):
-    """Validate sort by field."""
-    if option not in ("+", "-"):
-        raise ValueError(f"Invalid sort by option '{option}'.")
-    if field not in ("id", "score", "title"):
-        raise ValueError(f"Invalid sort by field '{field}'.")
-    return (option, field)
-
-
-def validate_sort_by(value: str) -> str:
-    """Validate sort by string."""
-    for item in value.split(","):
-        validate_sort_by_field(item[0], item[1:])
-    return value
-
-
-SortBy = TypeAliasType("SortBy", Annotated[str, AfterValidator(validate_sort_by)])
-
-
-# class SortBy(str):
-#     @classmethod
-#     def __get_validators__(cls):
-#         yield validate_sort_by
-
-
-# # To replace fixed Generic once Pydantic supports TypeVarTuple
-# SortFields = TypeVarTuple("SortFields")

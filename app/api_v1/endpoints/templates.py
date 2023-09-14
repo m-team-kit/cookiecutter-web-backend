@@ -5,12 +5,13 @@ from uuid import UUID
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Body, Depends, Response, status
+from pydantic import conint
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
 from app import authentication, database, models, utils
 from app.api_v1 import parameters, schemas
-from app.api_v1.schemas import SortBy
+from app.api_v1.schemas import Score, SortBy
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -155,7 +156,7 @@ async def get_template(
 async def rate_template(
     response: Response,
     uuid: UUID = parameters.template_uuid,
-    score: float = Body(),
+    score: Score = Body(),
     current_user: models.User = Depends(authentication.get_user),
     session: Session = Depends(database.get_session),
 ) -> schemas.Template:

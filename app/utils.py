@@ -54,3 +54,19 @@ def parse_field(name, value, prompt=None) -> dict:
             option["prompt"] = prompt.get(option["name"], None)
         return data
     raise NotImplementedError(f"Field type '{type(value)}' not supported.")
+
+
+def validate_sort_by_field(option, field):
+    """Validate sort by field."""
+    if option not in ("+", "-"):
+        raise ValueError(f"Invalid sort by option '{option}'.")
+    if field not in ("id", "score", "title"):
+        raise ValueError(f"Invalid sort by field '{field}'.")
+    return (option, field)
+
+
+def validate_sort_by(value: str) -> str:
+    """Validate sort by string."""
+    for item in value.split(","):
+        validate_sort_by_field(item[0], item[1:])
+    return value
