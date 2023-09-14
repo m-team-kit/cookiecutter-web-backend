@@ -24,8 +24,7 @@ def test_200_updated_by_user_1(response):
     assert message["repoFile"] == "my_template_1.json"
     assert message["title"] == "My Template 1"
     assert message["summary"] == "Tests Cookiecutter"
-    assert message["language"] == "python"
-    assert sorted(message["tags"]) == ["tag1", "tag2"]
+    assert sorted(message["tags"]) == ["python", "rust"]
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://link-to-be-patched"
     assert message["gitCheckout"] == "main"
@@ -45,8 +44,7 @@ def test_201_created_by_user_1(response):
     assert message["repoFile"] == "my_template_3.json"
     assert message["title"] == "My Template 3"
     assert message["summary"] == "Template example 3"
-    assert message["language"] == "python"
-    assert sorted(message["tags"]) == ["tag3"]
+    assert sorted(message["tags"]) == ["erlang"]
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://some-git-link/template"
     assert message["gitCheckout"] == "main"
@@ -66,7 +64,6 @@ def test_201_created_by_new_user(response):
     assert message["repoFile"] == "my_template_4.json"
     assert message["title"] == "My Template 4"
     assert message["summary"] == "Template example 4"
-    assert message["language"] == "python"
     assert sorted(message["tags"]) == []
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://some-git-link/template"

@@ -1,8 +1,8 @@
 """"initial"
 
-Revision ID: d149d20b44e4
+Revision ID: b784dabf896f
 Revises: 
-Create Date: 2023-09-13 17:07:12.169536
+Create Date: 2023-09-14 11:29:44.366819
 
 """
 # pylint: disable=missing-function-docstring
@@ -14,7 +14,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = "d149d20b44e4"
+revision = "b784dabf896f"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -30,15 +30,13 @@ def upgrade():
         sa.Column("repoFile", sa.String(), nullable=False),
         sa.Column("title", sa.String(), nullable=False),
         sa.Column("summary", sa.String(), nullable=False),
-        sa.Column("language", app.database.lower(), nullable=False),
-        sa.Column("picture", sa.String(), nullable=False),
+        sa.Column("picture", sa.String(), nullable=True),
         sa.Column("gitLink", sa.String(), nullable=False),
-        sa.Column("gitCheckout", sa.String(), nullable=False),
+        sa.Column("gitCheckout", sa.String(), nullable=True),
         sa.Column("score", sa.Float(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_template_id"), "template", ["id"], unique=False)
-    op.create_index(op.f("ix_template_language"), "template", ["language"], unique=False)
     op.create_index(op.f("ix_template_repoFile"), "template", ["repoFile"], unique=False)
     op.create_table(
         "user",
@@ -88,7 +86,6 @@ def downgrade():
     op.drop_index(op.f("ix_user_issuer"), table_name="user")
     op.drop_table("user")
     op.drop_index(op.f("ix_template_repoFile"), table_name="template")
-    op.drop_index(op.f("ix_template_language"), table_name="template")
     op.drop_index(op.f("ix_template_id"), table_name="template")
     op.drop_table("template")
     # ### end Alembic commands ###

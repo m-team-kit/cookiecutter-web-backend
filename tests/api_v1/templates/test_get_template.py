@@ -22,8 +22,7 @@ def test_200_ok(response):
     assert message["repoFile"] == "my_template_1.json"
     assert message["title"] == "My Template 1"
     assert message["summary"] == "Tests Cookiecutter"
-    assert message["language"] == "python"
-    assert sorted(message["tags"]) == ["tag1", "tag2"]
+    assert sorted(message["tags"]) == ["python", "rust"]
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://link-to-be-patched"
     assert message["gitCheckout"] == "main"

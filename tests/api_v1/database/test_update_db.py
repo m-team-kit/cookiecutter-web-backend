@@ -28,8 +28,7 @@ def test_204_no_content(response, templates):
     assert templates["my_template_1"].repoFile == "my_template_1.json"
     assert templates["my_template_1"].title == "Edited Template 1"
     assert templates["my_template_1"].summary == "Template edited 1"
-    assert templates["my_template_1"].language == "python"
-    assert templates["my_template_1"].tags == set(["tag1", "tag9"])
+    assert templates["my_template_1"].tags == set(["python", "postgres"])
     assert templates["my_template_1"].picture == "https://picture-url/template_1"
     assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
     assert templates["my_template_1"].gitCheckout == "dev"

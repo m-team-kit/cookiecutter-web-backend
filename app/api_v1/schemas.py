@@ -14,7 +14,6 @@ class Template(BaseModel, from_attributes=True):
     repoFile: str
     title: str
     summary: str
-    language: str
     tags: set[str]
     picture: str
     gitLink: str
@@ -82,7 +81,7 @@ def validate_sort_by_field(option, field):
     """Validate sort by field."""
     if option not in ("+", "-"):
         raise ValueError(f"Invalid sort by option '{option}'.")
-    if field not in ("id", "score", "title", "language"):
+    if field not in ("id", "score", "title"):
         raise ValueError(f"Invalid sort by field '{field}'.")
     return (option, field)
 

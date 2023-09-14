@@ -1,8 +1,7 @@
 {
     "title": "Edited Template 2",
     "summary": "Template edited 2",
-    "language": "Python",
-    "tags": [ "Tag1", "Tag2" ],
+    "tags": [ "Python", "Erlang" ],
     "picture": "https://picture-url/template_2",
     "gitLink": "https://some-git-link/template_2",
     "gitCheckout": "dev"
