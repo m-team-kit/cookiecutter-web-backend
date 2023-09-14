@@ -12,6 +12,7 @@ from app import utils
 
 Score = TypeAliasType("Score", conint(ge=0, le=5))
 SortBy = TypeAliasType("SortBy", Annotated[str, AfterValidator(utils.validate_sort_by)])
+Input = TypeAliasType("Input", Annotated[str, AfterValidator(utils.validate_input)])
 
 
 # class SortBy(str):

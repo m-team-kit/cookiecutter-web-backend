@@ -70,3 +70,10 @@ def validate_sort_by(value: str) -> str:
     for item in value.split(","):
         validate_sort_by_field(item[0], item[1:])
     return value
+
+
+def validate_input(value: str) -> str:
+    """Sanitize input string."""
+    if "{" in value or "}" in value or "%" in value or "#" in value:
+        raise ValueError("Input contains unsafe characters.")
+    return value
