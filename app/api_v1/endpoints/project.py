@@ -145,4 +145,4 @@ async def generate_project(
     shutil.make_archive(f"{tempdir}/project", "zip", f"{tempdir}/project", logger=logger)
 
     logger.debug("Returning cookiecutter.json file.")
-    return FileResponse(f"{tempdir}/project.zip", media_type="application/zip", filename="project.zip")
+    return FileResponse(f"{tempdir}/project.zip", media_type="application/zip", filename="project.zip", headers={"Access-Control-Expose-Headers": "Content-Disposition"})

@@ -1,13 +1,13 @@
 services:
   backend:
     image: backend:testing
-    restart: no
+    restart: "no"
     build:
       tags: [backend:testing]
       target: testing
 
   database:
-    restart: no
+    restart: "no"
     volumes:
       - ./scripts/setup_migration.sql:/docker-entrypoint-initdb.d/0-setup_migration.sql
       - ./scripts/setup_sandbox.sql:/docker-entrypoint-initdb.d/1-setup_sandbox.sql
@@ -17,4 +17,4 @@ services:
       POSTGRES_DB: db_name
 
   smtp_server:
-    restart: no
+    restart: "no"
