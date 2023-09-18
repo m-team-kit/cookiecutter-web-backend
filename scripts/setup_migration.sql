@@ -5,7 +5,17 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> b784dabf896f
+-- Running upgrade  -> 1d68939c1c55
+
+CREATE TABLE tag (
+    id UUID NOT NULL, 
+    name VARCHAR NOT NULL, 
+    PRIMARY KEY (id)
+);
+
+CREATE INDEX ix_tag_id ON tag (id);
+
+CREATE UNIQUE INDEX ix_tag_name ON tag (name);
 
 CREATE TABLE template (
     id UUID NOT NULL, 
@@ -52,19 +62,15 @@ CREATE TABLE score (
 
 CREATE INDEX ix_score_id ON score (id);
 
-CREATE TABLE tag (
-    id UUID NOT NULL, 
-    parent_id UUID NOT NULL, 
-    name VARCHAR NOT NULL, 
-    PRIMARY KEY (id), 
-    FOREIGN KEY(parent_id) REFERENCES template (id) ON DELETE CASCADE
+CREATE TABLE tag_association (
+    template_id UUID NOT NULL, 
+    tag_id UUID NOT NULL, 
+    PRIMARY KEY (template_id, tag_id), 
+    FOREIGN KEY(tag_id) REFERENCES tag (id) ON DELETE CASCADE, 
+    FOREIGN KEY(template_id) REFERENCES template (id) ON DELETE CASCADE
 );
 
-CREATE INDEX ix_tag_id ON tag (id);
-
-CREATE INDEX ix_tag_name ON tag (name);
-
-INSERT INTO alembic_version (version_num) VALUES ('b784dabf896f') RETURNING alembic_version.version_num;
+INSERT INTO alembic_version (version_num) VALUES ('1d68939c1c55') RETURNING alembic_version.version_num;
 
 COMMIT;
 

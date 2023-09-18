@@ -57,8 +57,10 @@ async def create_database(
     logger.debug("Cloning repository at %s.", tempdir)
     git.Repo.clone_from(f"{settings.repository_url}", tempdir, branch="main", depth=1)
 
-    logger.debug("Deleting all templates from database.")
+    logger.debug("Deleting all templates, tags and users from database.")
     session.query(models.Template).delete()
+    session.query(models.Tag).delete()
+    session.query(models.User).delete()
 
     logger.debug("Creating templates from json files.")
     for path in pathlib.Path(tempdir).glob("*.json"):
@@ -110,6 +112,9 @@ async def update_database(
     logger.debug("Cloning repository at %s.", tempdir)
     git.Repo.clone_from(f"{settings.repository_url}", tempdir, branch="main", depth=1)
 
+    logger.debug("Delete all tags from database.")
+    session.query(models.Tag).delete()
+
     logger.debug("Collect all templates from database.")
     templates = session.query(models.Template).all()
     temp_files = [x.repoFile for x in templates]
@@ -132,6 +137,10 @@ async def update_database(
     for template in [x for x in templates if x.repoFile in to_update]:
         _update_template(session, template, pathlib.Path(tempdir))
 
+    logger.debug("Delete all users that do not have any scores.")
+    session.flush()
+    session.query(models.User).filter(~models.User.scores.any()).delete()
+
     logger.debug("Commit changes to database.")
     session.commit()
 
@@ -146,7 +155,6 @@ def _create_template(session: Session, repo_file: pathlib.Path) -> None:
 
 
 def _update_template(session: Session, template: models.Template, dir: pathlib.Path) -> None:
-    # pylint: disable=redefined-builtin
     logger.debug("Opening template file for %s.", template.repoFile)
     with open(dir / template.repoFile, "r", encoding="utf-8") as file:
         template_kwds = json.load(file)

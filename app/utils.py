@@ -77,3 +77,19 @@ def validate_input(value: str) -> str:
     if "{" in value or "}" in value or "%" in value or "#" in value:
         raise ValueError("Input contains unsafe characters.")
     return value
+
+
+def unique(session, cls, hashfunc, queryfunc, args, kwds):
+    """Get object from database or create it if it does not exist."""
+    session.unique_cache = getattr(session, "unique_cache", {})
+    key = (cls, hashfunc(*args, **kwds))
+    if key in session.unique_cache:
+        return session.unique_cache[key]
+    else:
+        with session.no_autoflush:
+            obj = queryfunc(session.query(cls), *args, **kwds).first()
+            if not obj:
+                obj = cls(*args, **kwds)
+                session.add(obj)
+        session.unique_cache[key] = obj
+        return obj

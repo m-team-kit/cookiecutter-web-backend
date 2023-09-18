@@ -7,6 +7,7 @@ from typing import Generator
 import sqlalchemy.types as types
 from fastapi import FastAPI, Request
 from sqlalchemy import engine, orm
+from app import utils
 
 from app.config import Settings
 
@@ -42,17 +43,24 @@ class Base(orm.DeclarativeBase):
         return camel_to_snake(cls.__name__)
 
 
-class lower(types.TypeDecorator):
-    """Converts strings to lowercase on the way in."""
+class UniqueMixin(object):
+    """Mixin to add a method to a model to get or create an object."""
 
-    # pylint: disable=too-many-ancestors
-    # pylint: disable=abstract-method
+    # https://github.com/sqlalchemy/sqlalchemy/wiki/UniqueObject
+    # pylint: disable=useless-object-inheritance
+    # pylint: disable=missing-function-docstring
 
-    impl = types.String
-    cache_ok = True
+    @classmethod
+    def unique_hash(cls, *arg, **kw):
+        raise NotImplementedError()
 
-    def process_bind_param(self, value, dialect):
-        return value.lower() if value is not None else None
+    @classmethod
+    def unique_filter(cls, query, *arg, **kw):
+        raise NotImplementedError()
+
+    @classmethod
+    def as_unique(cls, session, *arg, **kw):
+        return utils.unique(session, cls, cls.unique_hash, cls.unique_filter, arg, kw)
 
 
 def sessionmaker(sql_engine: engine.Engine) -> orm.sessionmaker:

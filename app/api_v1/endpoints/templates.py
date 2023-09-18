@@ -54,7 +54,7 @@ async def list_templates(
 
     logger.debug("Filtering templates by tags: %s.", tags)
     if tags:  # Tags are case insensitive (always lower)
-        search = search.join(models.Template._tags)  # pylint: disable=protected-access
+        search = search.join(models.Template.tag_associations).join(models.TagAssociation.tag)
         search = search.filter(models.Tag.name.in_(set(t.lower() for t in tags)))
         search = search.group_by(models.Template.id)
         search = search.having(sa.func.count(models.Tag.id) == len(set(tags)))  # pylint: disable=E1102

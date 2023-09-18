@@ -3,7 +3,6 @@ See: https://fastapi.tiangolo.com/tutorial/testing/
 """
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
-import copy
 import os
 import tomllib
 from unittest.mock import Mock, patch
@@ -48,6 +47,7 @@ def environment(config):
 def sql_session(client, environment):
     """Returns the database session used in the test client methods."""
     engine = client.app.state.sql_engine  # Use same engine as application
+    engine = engine.execution_options(isolation_level="SERIALIZABLE")
     with orm.Session(engine, autoflush=False, autocommit=False) as session:
         yield session
 
