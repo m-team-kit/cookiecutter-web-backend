@@ -12,7 +12,7 @@ def response(client, patch_session, template_uuid, headers, body):
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-@pytest.mark.parametrize("body", ["1"], indirect=True)
+@pytest.mark.parametrize("body", ["1", "1.0"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
 def test_200_updated_by_user_1(response):
     """Tests the response status code is 200 and valid."""
@@ -24,15 +24,14 @@ def test_200_updated_by_user_1(response):
     assert message["repoFile"] == "my_template_1.json"
     assert message["title"] == "My Template 1"
     assert message["summary"] == "Tests Cookiecutter"
-    assert message["language"] == "python"
-    assert sorted(message["tags"]) == ["tag1", "tag2"]
+    assert sorted(message["tags"]) == ["python", "rust"]
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://link-to-be-patched"
     assert message["gitCheckout"] == "main"
-    assert message["score"] == 2.5
+    assert message["score"] == 1.0
 
 
-@pytest.mark.parametrize("template_uuid", ["uuid_3"], indirect=True)
+@pytest.mark.parametrize("template_uuid", ["uuid_4"], indirect=True)
 @pytest.mark.parametrize("body", ["1"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
 def test_201_created_by_user_1(response):
@@ -40,17 +39,17 @@ def test_201_created_by_user_1(response):
     # Assert response is valid
     assert response.status_code == 201
     # Assert template in response is valid
-    message = response.json()
-    assert message["id"] == "8fc20f81-e0a9-471c-8008-697ce799e73b"
-    assert message["repoFile"] == "my_template_3.json"
-    assert message["title"] == "My Template 3"
-    assert message["summary"] == "Template example 3"
-    assert message["language"] == "python"
-    assert sorted(message["tags"]) == ["tag3"]
-    assert message["picture"] == "https://picture-url/template"
-    assert message["gitLink"] == "https://some-git-link/template"
-    assert message["gitCheckout"] == "main"
-    assert message["score"] == 1.0
+    assert response.json() == {
+        "id": "f3f35224-e35c-46a4-90d1-354646970b13",
+        "repoFile": "my_template_4.json",
+        "title": "My Template 4",
+        "summary": "Template example 4",
+        "tags": [],
+        "picture": "https://picture-url/template",
+        "gitLink": "https://some-git-link/template",
+        "gitCheckout": "main",
+        "score": 1.0,
+    }
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_4"], indirect=True)
@@ -66,16 +65,15 @@ def test_201_created_by_new_user(response):
     assert message["repoFile"] == "my_template_4.json"
     assert message["title"] == "My Template 4"
     assert message["summary"] == "Template example 4"
-    assert message["language"] == "python"
     assert sorted(message["tags"]) == []
     assert message["picture"] == "https://picture-url/template"
     assert message["gitLink"] == "https://some-git-link/template"
     assert message["gitCheckout"] == "main"
-    assert message["score"] == 3.0
+    assert message["score"] == 1.0
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-@pytest.mark.parametrize("body", ["1"], indirect=True)
+@pytest.mark.parametrize("body", ["1", "1.0"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["bad-token", None], indirect=True)
 def test_401_unauthorized(response):
     """Tests the response status code is 401 and valid."""
@@ -91,7 +89,7 @@ def test_401_unauthorized(response):
 
 
 @pytest.mark.parametrize("template_uuid", ["unknown"], indirect=True)
-@pytest.mark.parametrize("body", ["1"], indirect=True)
+@pytest.mark.parametrize("body", ["1", "1.0"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
 def test_404_not_found(response):
     """Tests the response status code is 404 and valid."""
@@ -105,7 +103,7 @@ def test_404_not_found(response):
 
 
 @pytest.mark.parametrize("template_uuid", ["bad_uuid"], indirect=True)
-@pytest.mark.parametrize("body", ["1"], indirect=True)
+@pytest.mark.parametrize("body", ["1", "1.0"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
 def test_422_bad_uuid(response):
     """Tests the response status code is 422 and valid."""
@@ -119,7 +117,49 @@ def test_422_bad_uuid(response):
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-@pytest.mark.parametrize("body", ["a"], indirect=True)
+@pytest.mark.parametrize("body", ["-1", "-1.0"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_422_greater_than_equal(response):
+    """Tests the response status code is 422 and valid."""
+    # Assert response is valid
+    assert response.status_code == 422
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "greater_than_equal"
+    assert message["detail"][0]["loc"] == ["body"]
+    assert "should be greater than or equal" in message["detail"][0]["msg"]
+
+
+@pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
+@pytest.mark.parametrize("body", ["6", "6.0"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_422_less_than_equal(response):
+    """Tests the response status code is 422 and valid."""
+    # Assert response is valid
+    assert response.status_code == 422
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "less_than_equal"
+    assert message["detail"][0]["loc"] == ["body"]
+    assert "should be less than or equal" in message["detail"][0]["msg"]
+
+
+@pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
+@pytest.mark.parametrize("body", ["-0.1", "2.5", "5.1"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_422_int_from_float(response):
+    """Tests the response status code is 422 and valid."""
+    # Assert response is valid
+    assert response.status_code == 422
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "int_from_float"
+    assert message["detail"][0]["loc"] == ["body"]
+    assert "Input should be a valid integer" in message["detail"][0]["msg"]
+
+
+@pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
+@pytest.mark.parametrize("body", ["a", "."], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
 def test_422_bad_score(response):
     """Tests the response status code is 422 and valid."""
@@ -134,7 +174,7 @@ def test_422_bad_score(response):
 
 @pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-@pytest.mark.parametrize("body", ["1"], indirect=True)
+@pytest.mark.parametrize("body", ["1", "1.0"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
 def test_500_database_error(response):
     """Tests the response status code is 500 and valid."""

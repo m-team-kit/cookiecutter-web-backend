@@ -52,19 +52,7 @@ def test_200_title_asc(response):
     assert templates[3]["title"] == "My Template 4"
 
 
-@pytest.mark.parametrize("query", [{"language": "Python"}, {"language": "python"}], indirect=True)
-def test_200_message(response):
-    """Tests the response status code is 200 and valid."""
-    assert response.status_code == 200
-    templates = sorted(response.json(), key=lambda x: x["title"])
-    assert len(templates) == 4
-    assert templates[0]["title"] == "My Template 1"
-    assert templates[1]["title"] == "My Template 2"
-    assert templates[2]["title"] == "My Template 3"
-    assert templates[3]["title"] == "My Template 4"
-
-
-@pytest.mark.parametrize("query", [{"tags": ["Tag1", "Tag2"]}, {"tags": ["tag1", "tag2"]}], indirect=True)
+@pytest.mark.parametrize("query", [{"tags": ["python", "rust"]}, {"tags": ["Python", "Rust"]}], indirect=True)
 def test_200_tags(response):
     """Tests the response status code is 200 and valid."""
     assert response.status_code == 200

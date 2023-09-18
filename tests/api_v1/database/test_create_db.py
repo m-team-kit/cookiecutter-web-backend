@@ -2,6 +2,7 @@
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 from uuid import UUID
+from app import models
 
 import pytest
 
@@ -15,34 +16,87 @@ def response(client, patch_session, patch_repository, headers):
 
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
-def test_204_no_content(response, templates, sql_session):
+def test_204_correct_content(response, sql_session):
     """Tests the response status code is 204 and valid."""
     # Assert response is valid
     assert response.status_code == 204
     # Assert database contains the correct templates
+    templates = sorted(sql_session.query(models.Template).all(), key=lambda x: x.repoFile)
     assert len(templates) == 4
-    assert "my_template_3" not in templates
-    assert "my_template_5" in templates
-    # Assert templates are correct
-    assert isinstance(templates["my_template_1"].id, UUID)
-    assert templates["my_template_1"].repoFile == "my_template_1.json"
-    assert templates["my_template_1"].title == "Edited Template 1"
-    assert templates["my_template_1"].summary == "Template edited 1"
-    assert templates["my_template_1"].language == "python"
-    assert templates["my_template_1"].tags == set(["tag1", "tag9"])
-    assert templates["my_template_1"].picture == "https://picture-url/template_1"
-    assert templates["my_template_1"].gitLink == "https://some-git-link/template_1"
-    assert templates["my_template_1"].gitCheckout == "dev"
+    assert all(isinstance(template.id, UUID) for template in templates)
+
+
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_204_correct_repo_file(response, sql_session):
+    """Tests the response status code is 204 and valid."""
+    # Assert response is valid
+    assert response.status_code == 204
+    # Assert database contains the correct templates
+    templates = sorted(sql_session.query(models.Template).all(), key=lambda x: x.repoFile)
+    assert templates[0].repoFile == "my_template_1.json"
+    assert templates[1].repoFile == "my_template_2.json"
+    assert templates[2].repoFile == "my_template_4.json"
+    assert templates[3].repoFile == "my_template_5.json"
+
+
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_204_correct_title(response, sql_session):
+    """Tests the response status code is 204 and valid."""
+    # Assert response is valid
+    assert response.status_code == 204
+    # Assert database contains the correct templates
+    templates = sorted(sql_session.query(models.Template).all(), key=lambda x: x.repoFile)
+    assert templates[0].title == "Edited Template 1"
+    assert templates[1].title == "Edited Template 2"
+    assert templates[2].title == "Edited Template 4"
+    assert templates[3].title == "My Template 5"
+
+
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_204_correct_scores(response, sql_session):
+    """Tests the response status code is 204 and valid."""
+    # Assert response is valid
+    assert response.status_code == 204
     # Assert scores are correct
-    assert templates["my_template_1"].score is None
-    assert templates["my_template_2"].score is None
-    assert templates["my_template_4"].score is None
-    assert templates["my_template_5"].score is None
+    templates = sorted(sql_session.query(models.Template).all(), key=lambda x: x.repoFile)
+    assert all(template.score is None for template in templates)
+    scores = sql_session.query(models.Score).all()
+    assert scores == []
+
+
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_204_correct_tags(response, sql_session):
+    """Tests the response status code is 204 and valid."""
+    # Assert response is valid
+    assert response.status_code == 204
+    # Assert tags are correct
+    templates = sorted(sql_session.query(models.Template).all(), key=lambda x: x.repoFile)
+    assert templates[0].tags == set(["python", "postgres"])
+    assert templates[1].tags == set(["python", "erlang"])
+    assert templates[2].tags == set([])
+    assert templates[3].tags == set(["python"])
+    tags = sql_session.query(models.Tag).all()
+    assert len(tags) == 3
+
+
+@pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
+def test_204_correct_users(response, sql_session):
+    """Tests the response status code is 204 and valid."""
+    # Assert response is valid
+    assert response.status_code == 204
+    # Assert tags are correct
+    users = sorted(sql_session.query(models.User).all(), key=lambda x: (x.issuer, x.subject))
+    assert users == []
 
 
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", [None], indirect=True)
-def test_401_unauthorized(response):
+def test_401_unauthorized(response, sql_session):
     """Tests the response status code is 401 and valid."""
     # Assert response is valid
     assert response.status_code == 401
@@ -57,7 +111,7 @@ def test_401_unauthorized(response):
 
 @pytest.mark.parametrize("patch_repository", ["repository_1"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["bad-secret"], indirect=True)
-def test_403_forbidden(response):
+def test_403_forbidden(response, sql_session):
     """Tests the response status code is 403 and valid."""
     # Asset response is valid
     assert response.status_code == 403
@@ -70,7 +124,7 @@ def test_403_forbidden(response):
 
 @pytest.mark.parametrize("patch_repository", ["repository_down"], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
-def test_500_repository_down(response):
+def test_500_repository_down(response, sql_session):
     """Tests the response status code is 500 and valid.""" ""
     # Assert response is valid
     assert response.status_code == 500
@@ -83,7 +137,7 @@ def test_500_repository_down(response):
 
 @pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 @pytest.mark.parametrize("authorization_bearer", ["6de44315b565ea73f778282d"], indirect=True)
-def test_500_database_error(response):
+def test_500_database_error(response, sql_session):
     """Tests the response status code is 500 and valid."""
     # Assert response is valid
     assert response.status_code == 500

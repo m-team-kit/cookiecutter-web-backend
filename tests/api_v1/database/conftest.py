@@ -1,20 +1,10 @@
 # pylint: disable=missing-module-docstring,unused-argument
 import shutil
-from pathlib import Path
 from unittest.mock import patch
 
 import git
 import pytest
 from git import InvalidGitRepositoryError
-
-from app import models
-
-
-@pytest.fixture(scope="module")
-def templates(response, sql_session):
-    """Fixture to provide database templates after request."""
-    templates = sql_session.query(models.Template).all()
-    return {Path(t.repoFile).stem: t for t in templates}
 
 
 @pytest.fixture(scope="module")

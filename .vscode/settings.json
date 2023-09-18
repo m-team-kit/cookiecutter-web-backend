@@ -4,12 +4,15 @@
     },
     "cSpell.words": [
         "aiosmtpd",
+        "associationproxy",
         "autoapp",
         "autoflush",
+        "conint",
         "cookiecutter",
         "cookiecutters",
         "DBAPI",
         "dpage",
+        "hashfunc",
         "jsonable",
         "loadscope",
         "noproc",
@@ -20,17 +23,16 @@
         "pgadmin",
         "poolclass",
         "psycopg",
+        "queryfunc",
         "searchpath",
         "sessionmaker",
         "starlette",
         "xdist"
     ],
     "python.testing.pytestArgs": [
-        "--numprocesses=auto",
-        "--dist=loadscope",
         "tests"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "black-formatter.args": [ "--line-length=150" ]
+    "black-formatter.args": [ "--line-length=200" ]
 }
