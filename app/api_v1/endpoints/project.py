@@ -14,6 +14,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from app import authentication, database, models, utils
 from app.api_v1 import parameters, schemas
+from app.api_v1.schemas import Input
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -115,7 +116,7 @@ async def generate_project(
     session: Session = Depends(database.get_session),
     tempdir: tempfile.TemporaryDirectory = Depends(utils.temp_folder),
     uuid: UUID = parameters.template_uuid,
-    options_in: dict[str, str] = Body(),
+    options_in: dict[str, Input] = Body(),
     current_user: models.User = Depends(authentication.get_user),
 ) -> FileResponse:
     """
@@ -144,4 +145,4 @@ async def generate_project(
     shutil.make_archive(f"{tempdir}/project", "zip", f"{tempdir}/project", logger=logger)
 
     logger.debug("Returning cookiecutter.json file.")
-    return FileResponse(f"{tempdir}/project.zip", media_type="application/zip", filename="project.zip")
+    return FileResponse(f"{tempdir}/project.zip", media_type="application/zip", filename="project.zip", headers={"Access-Control-Expose-Headers": "Content-Disposition"})

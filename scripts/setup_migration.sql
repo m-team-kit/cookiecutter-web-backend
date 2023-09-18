@@ -5,7 +5,17 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> d149d20b44e4
+-- Running upgrade  -> 1d68939c1c55
+
+CREATE TABLE tag (
+    id UUID NOT NULL, 
+    name VARCHAR NOT NULL, 
+    PRIMARY KEY (id)
+);
+
+CREATE INDEX ix_tag_id ON tag (id);
+
+CREATE UNIQUE INDEX ix_tag_name ON tag (name);
 
 CREATE TABLE template (
     id UUID NOT NULL, 
@@ -14,17 +24,14 @@ CREATE TABLE template (
     "repoFile" VARCHAR NOT NULL, 
     title VARCHAR NOT NULL, 
     summary VARCHAR NOT NULL, 
-    language VARCHAR NOT NULL, 
-    picture VARCHAR NOT NULL, 
+    picture VARCHAR, 
     "gitLink" VARCHAR NOT NULL, 
-    "gitCheckout" VARCHAR NOT NULL, 
+    "gitCheckout" VARCHAR, 
     score FLOAT, 
     PRIMARY KEY (id)
 );
 
 CREATE INDEX ix_template_id ON template (id);
-
-CREATE INDEX ix_template_language ON template (language);
 
 CREATE INDEX "ix_template_repoFile" ON template ("repoFile");
 
@@ -55,19 +62,15 @@ CREATE TABLE score (
 
 CREATE INDEX ix_score_id ON score (id);
 
-CREATE TABLE tag (
-    id UUID NOT NULL, 
-    parent_id UUID NOT NULL, 
-    name VARCHAR NOT NULL, 
-    PRIMARY KEY (id), 
-    FOREIGN KEY(parent_id) REFERENCES template (id) ON DELETE CASCADE
+CREATE TABLE tag_association (
+    template_id UUID NOT NULL, 
+    tag_id UUID NOT NULL, 
+    PRIMARY KEY (template_id, tag_id), 
+    FOREIGN KEY(tag_id) REFERENCES tag (id) ON DELETE CASCADE, 
+    FOREIGN KEY(template_id) REFERENCES template (id) ON DELETE CASCADE
 );
 
-CREATE INDEX ix_tag_id ON tag (id);
-
-CREATE INDEX ix_tag_name ON tag (name);
-
-INSERT INTO alembic_version (version_num) VALUES ('d149d20b44e4') RETURNING alembic_version.version_num;
+INSERT INTO alembic_version (version_num) VALUES ('1d68939c1c55') RETURNING alembic_version.version_num;
 
 COMMIT;
 

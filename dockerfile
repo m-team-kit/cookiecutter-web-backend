@@ -41,7 +41,7 @@ RUN python -m pip install -r requirements-test.txt
 
 USER sid
 ENTRYPOINT [ "python" ]
-CMD ["-m", "pytest", "-n=auto", "--dist=loadscope", "tests"]
+CMD ["-m", "pytest", "tests"]
 
 # ================================= DEVELOPMENT ================================
 FROM testing AS development

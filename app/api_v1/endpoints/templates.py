@@ -5,12 +5,13 @@ from uuid import UUID
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Body, Depends, Response, status
+from pydantic import conint
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
 from app import authentication, database, models, utils
 from app.api_v1 import parameters, schemas
-from app.api_v1.schemas import SortBy
+from app.api_v1.schemas import Score, SortBy
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -39,7 +40,6 @@ router = APIRouter()
 )
 async def list_templates(
     session: Session = Depends(database.get_session),
-    language: str = parameters.language,
     tags: List[str] = parameters.tags,
     keywords: List[str] = parameters.keywords,
     sort_by: SortBy = parameters.sort_by,
@@ -52,9 +52,12 @@ async def list_templates(
     logger.info("Listing templates with score average.")
     search = session.query(models.Template)
 
-    logger.debug("Filtering templates by language: %s.", language)
-    if language:  # Language is case insensitive (always lower)
-        search = search.filter(models.Template.language == language.lower())
+    logger.debug("Filtering templates by tags: %s.", tags)
+    if tags:  # Tags are case insensitive (always lower)
+        search = search.join(models.Template.tag_associations).join(models.TagAssociation.tag)
+        search = search.filter(models.Tag.name.in_(set(t.lower() for t in tags)))
+        search = search.group_by(models.Template.id)
+        search = search.having(sa.func.count(models.Tag.id) == len(set(tags)))  # pylint: disable=E1102
 
     logger.debug("Filtering templates by keywords: %s.", keywords)
     for keyword in keywords:  # Search must include at least each keyword in one field
@@ -64,13 +67,6 @@ async def list_templates(
                 sa.func.lower(models.Template.title).contains(keyword.lower()),
             )
         )
-
-    logger.debug("Filtering templates by tags: %s.", tags)
-    if tags:  # Tags are case insensitive (always lower)
-        search = search.join(models.Template._tags)  # pylint: disable=protected-access
-        search = search.filter(models.Tag.name.in_(set(t.lower() for t in tags)))
-        search = search.group_by(models.Template.id)
-        search = search.having(sa.func.count(models.Tag.id) == len(set(tags)))  # pylint: disable=E1102
 
     logger.debug("Sorting templates by: %s.", sort_by)
     for sort in sort_by.split(","):
@@ -160,7 +156,7 @@ async def get_template(
 async def rate_template(
     response: Response,
     uuid: UUID = parameters.template_uuid,
-    score: float = Body(),
+    score: Score = Body(),
     current_user: models.User = Depends(authentication.get_user),
     session: Session = Depends(database.get_session),
 ) -> schemas.Template:
