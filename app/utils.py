@@ -51,7 +51,7 @@ def parse_field(name, value, prompt=None) -> dict:
         data["options"] = [{"name": v} for v in value]
         data["prompt"] = prompt.get("__prompt__", None) if prompt else None
         for option in data["options"]:
-            option["prompt"] = prompt.get(option["name"], None)
+            option["prompt"] = prompt.get(option["name"], None) if prompt else None
         return data
     raise NotImplementedError(f"Field type '{type(value)}' not supported.")
 
