@@ -18,7 +18,7 @@ from app import create_app, database
 # -----------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="session", params=["simple", "notifications"])
+@pytest.fixture(scope="session", params=["simple", "notifications", "no-cors"])
 def configuration_path(request):
     """Fixture to provide each testing configuration path."""
     return f"tests/configurations/{request.param}.toml"

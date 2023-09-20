@@ -19,16 +19,17 @@ def test_200_updated_by_user_1(response):
     # Assert response is valid
     assert response.status_code == 200
     # Assert template in response is valid
-    message = response.json()
-    assert message["id"] == "bced037a-a326-425d-aa03-5d3cbc9aa3d1"
-    assert message["repoFile"] == "my_template_1.json"
-    assert message["title"] == "My Template 1"
-    assert message["summary"] == "Tests Cookiecutter"
-    assert sorted(message["tags"]) == ["python", "rust"]
-    assert message["picture"] == "https://picture-url/template"
-    assert message["gitLink"] == "https://link-to-be-patched"
-    assert message["gitCheckout"] == "main"
-    assert message["score"] == 1.0
+    assert response.json() == {
+        "id": "bced037a-a326-425d-aa03-5d3cbc9aa3d1",
+        "repoFile": "my_template_1.json",
+        "title": "My Template 1",
+        "summary": "Tests Cookiecutter",
+        "tags": ["rust", "python"],
+        "picture": "https://link-to-be-patched/raw/main/path/to/picture.png",
+        "gitLink": "https://link-to-be-patched",
+        "gitCheckout": "main",
+        "score": 1.0,
+    }
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_4"], indirect=True)
@@ -45,7 +46,7 @@ def test_201_created_by_user_1(response):
         "title": "My Template 4",
         "summary": "Template example 4",
         "tags": [],
-        "picture": "https://picture-url/template",
+        "picture": "https://some-git-link/template/raw/main/path/to/picture.png",
         "gitLink": "https://some-git-link/template",
         "gitCheckout": "main",
         "score": 1.0,
@@ -60,16 +61,17 @@ def test_201_created_by_new_user(response):
     # Assert response is valid
     assert response.status_code == 201
     # Assert template in response is valid
-    message = response.json()
-    assert message["id"] == "f3f35224-e35c-46a4-90d1-354646970b13"
-    assert message["repoFile"] == "my_template_4.json"
-    assert message["title"] == "My Template 4"
-    assert message["summary"] == "Template example 4"
-    assert sorted(message["tags"]) == []
-    assert message["picture"] == "https://picture-url/template"
-    assert message["gitLink"] == "https://some-git-link/template"
-    assert message["gitCheckout"] == "main"
-    assert message["score"] == 1.0
+    assert response.json() == {
+        "id": "f3f35224-e35c-46a4-90d1-354646970b13",
+        "repoFile": "my_template_4.json",
+        "title": "My Template 4",
+        "summary": "Template example 4",
+        "tags": [],
+        "picture": "https://some-git-link/template/raw/main/path/to/picture.png",
+        "gitLink": "https://some-git-link/template",
+        "gitCheckout": "main",
+        "score": 1.0,
+    }
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)

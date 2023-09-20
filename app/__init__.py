@@ -49,3 +49,4 @@ def mount_api(package, app: FastAPI, prefix: str) -> None:
     app.mount(prefix, api)
     api.include_router(package.api_router)
     package.add_exception_handlers(api)
+    config.set_cors(api, app.state.settings)
