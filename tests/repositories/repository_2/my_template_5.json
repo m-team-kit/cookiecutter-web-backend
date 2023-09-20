@@ -2,7 +2,7 @@
     "title": "My Template 5",
     "summary": "Template example 5",
     "tags": [ "Tag1", "Tag2" ],
-    "picture": "https://picture-url/template_5",
+    "picture": "edited/picture.png",
     "gitLink": "https://some-git-link/template_5",
     "gitCheckout": "main"
 }

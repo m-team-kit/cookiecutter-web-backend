@@ -2,7 +2,7 @@
     "title": "Edited Template 1",
     "summary": "Template edited 1",
     "tags": [ "python", "postgres" ],
-    "picture": "https://picture-url/template_1",
+    "picture": "edited/picture.png",
     "gitLink": "https://some-git-link/template_1",
     "gitCheckout": "dev"
 }

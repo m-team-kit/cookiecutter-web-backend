@@ -16,7 +16,7 @@ def test_200_ok_all(response):
     """Tests the response status code is 200 and valid."""
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-    assert len(response.json()) == 4
+    assert len(response.json()) == 7
 
 
 @pytest.mark.parametrize("query", [{"sort_by": "-score"}, {}], indirect=True)
@@ -46,10 +46,10 @@ def test_200_title_asc(response):
     """Tests the response status code is 200 and valid."""
     assert response.status_code == 200
     templates = response.json()
-    assert templates[0]["title"] == "My Template 1"
-    assert templates[1]["title"] == "My Template 2"
-    assert templates[2]["title"] == "My Template 3"
-    assert templates[3]["title"] == "My Template 4"
+    assert templates[3]["title"] == "My Template 1"
+    assert templates[4]["title"] == "My Template 2"
+    assert templates[5]["title"] == "My Template 3"
+    assert templates[6]["title"] == "My Template 4"
 
 
 @pytest.mark.parametrize("query", [{"tags": ["python", "rust"]}, {"tags": ["Python", "Rust"]}], indirect=True)
