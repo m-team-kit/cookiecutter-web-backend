@@ -5,7 +5,6 @@ from uuid import UUID
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Body, Depends, Response, status
-from pydantic import conint
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 

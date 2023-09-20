@@ -23,7 +23,7 @@ def test_200_ok(response):
     assert message["title"] == "My Template 1"
     assert message["summary"] == "Tests Cookiecutter"
     assert sorted(message["tags"]) == ["python", "rust"]
-    assert message["picture"] == "https://link-to-be-patched/raw/main/path/to/picture.png"
+    assert message["picture"] == "path/to/picture.png"
     assert message["gitLink"] == "https://link-to-be-patched"
     assert message["gitCheckout"] == "main"
 
