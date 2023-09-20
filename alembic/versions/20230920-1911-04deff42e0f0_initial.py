@@ -1,8 +1,8 @@
 """"initial"
 
-Revision ID: 1d68939c1c55
+Revision ID: 04deff42e0f0
 Revises: 
-Create Date: 2023-09-15 15:18:51.598853
+Create Date: 2023-09-20 19:11:27.627793
 
 """
 # pylint: disable=missing-function-docstring
@@ -14,7 +14,7 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = "1d68939c1c55"
+revision = "04deff42e0f0"
 down_revision = None
 branch_labels = None
 depends_on = None

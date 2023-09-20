@@ -5,7 +5,7 @@ CREATE TABLE alembic_version (
     CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
 );
 
--- Running upgrade  -> 1d68939c1c55
+-- Running upgrade  -> 04deff42e0f0
 
 CREATE TABLE tag (
     id UUID NOT NULL, 
@@ -70,7 +70,7 @@ CREATE TABLE tag_association (
     FOREIGN KEY(template_id) REFERENCES template (id) ON DELETE CASCADE
 );
 
-INSERT INTO alembic_version (version_num) VALUES ('1d68939c1c55') RETURNING alembic_version.version_num;
+INSERT INTO alembic_version (version_num) VALUES ('04deff42e0f0') RETURNING alembic_version.version_num;
 
 COMMIT;
 
