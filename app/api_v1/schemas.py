@@ -2,7 +2,7 @@
 from typing import Annotated, Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, conint, model_validator
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import TypeAliasType
 
@@ -34,6 +34,12 @@ class Template(BaseModel, from_attributes=True):
     gitLink: str
     gitCheckout: str
     score: float | None
+
+    @model_validator(mode="after")
+    def full_picture_url(self) -> str:
+        """Append the repository url to the picture path to compose the link."""
+        self.picture = f"{self.gitLink}/raw/{self.gitCheckout}/{self.picture}"
+        return self
 
 
 Templates = TypeAliasType("Templates", list[Template])
