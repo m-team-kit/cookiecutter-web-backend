@@ -1,5 +1,5 @@
 # ================================== BUILDER ===================================
-ARG  PYTHON_VERSION=latest
+ARG  PYTHON_VERSION=3.11
 FROM python:${PYTHON_VERSION} as builder
 
 # Environments to reduce size of docker image
