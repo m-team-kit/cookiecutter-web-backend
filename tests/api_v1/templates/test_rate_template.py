@@ -27,6 +27,7 @@ def test_200_updated_by_user_1(response):
     assert set(message["tags"]) == set(["rust", "python"])
     assert message["picture"] == "path/to/picture.png"
     assert message["gitLink"] == "https://link-to-be-patched"
+    assert message["feedback"] == "https://link-to-feedback"
     assert message["gitCheckout"] == "main"
     assert message["score"] == 1.0
 
@@ -47,6 +48,7 @@ def test_201_created_by_user_1(response):
     assert message["tags"] == []
     assert message["picture"] == "path/to/picture.png"
     assert message["gitLink"] == "https://some-git-link/template"
+    assert message["feedback"] == "https://link-to-feedback"
     assert message["gitCheckout"] == "main"
     assert message["score"] == 1.0
 
@@ -67,6 +69,7 @@ def test_201_created_by_new_user(response):
     assert message["tags"] == []
     assert message["picture"] == "path/to/picture.png"
     assert message["gitLink"] == "https://some-git-link/template"
+    assert message["feedback"] == "https://link-to-feedback"
     assert message["gitCheckout"] == "main"
     assert message["score"] == 1.0
 
