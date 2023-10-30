@@ -32,6 +32,7 @@ class Template(BaseModel, from_attributes=True):
     tags: set[str]
     picture: str
     gitLink: str
+    feedback: str
     gitCheckout: str
     score: float | None
 

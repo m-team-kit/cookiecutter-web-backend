@@ -22,6 +22,7 @@ class Template(Base):
     summary: orm.Mapped[str] = orm.mapped_column(nullable=False)
     picture: orm.Mapped[str] = orm.mapped_column(nullable=True)
     gitLink: orm.Mapped[str] = orm.mapped_column(nullable=False)
+    feedback: orm.Mapped[str] = orm.mapped_column(nullable=False)
     gitCheckout: orm.Mapped[str] = orm.mapped_column(nullable=True)
     scores: orm.Mapped[list["Score"]] = orm.relationship(cascade="all, delete", passive_deletes=True)
     score: orm.Mapped[float] = orm.mapped_column(nullable=True)
