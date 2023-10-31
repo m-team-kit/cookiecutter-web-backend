@@ -4,5 +4,6 @@
     "tags": [ "Tag1", "Tag2" ],
     "picture": "edited/picture.png",
     "gitLink": "https://some-git-link/template_5",
+    "feedback": "https://link-to-feedback",
     "gitCheckout": "main"
 }

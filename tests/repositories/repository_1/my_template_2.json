@@ -4,5 +4,6 @@
     "tags": [ "Python", "Erlang" ],
     "picture": "edited/picture.png",
     "gitLink": "https://some-git-link/template_2",
+    "feedback": "https://link-to-feedback",
     "gitCheckout": "dev"
 }
