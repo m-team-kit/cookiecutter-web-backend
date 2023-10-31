@@ -3,5 +3,6 @@
     "summary": "Template example 5",
     "tags": [ "Python" ],
     "picture": "edited/picture.png",
-    "gitLink": "https://some-git-link/template_5"
+    "gitLink": "https://some-git-link/template_5",
+    "feedback": "https://link-to-feedback"
 }

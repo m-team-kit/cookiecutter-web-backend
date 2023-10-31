@@ -25,6 +25,7 @@ def test_200_ok(response):
     assert sorted(message["tags"]) == ["python", "rust"]
     assert message["picture"] == "path/to/picture.png"
     assert message["gitLink"] == "https://link-to-be-patched"
+    assert message["feedback"] == "https://link-to-feedback"
     assert message["gitCheckout"] == "main"
 
 
