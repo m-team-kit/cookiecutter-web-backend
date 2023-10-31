@@ -72,5 +72,11 @@ CREATE TABLE tag_association (
 
 INSERT INTO alembic_version (version_num) VALUES ('04deff42e0f0') RETURNING alembic_version.version_num;
 
+-- Running upgrade 04deff42e0f0 -> e4cb3fa0953e
+
+ALTER TABLE template ADD COLUMN feedback VARCHAR DEFAULT 'lorem ipsum' NOT NULL;
+
+UPDATE alembic_version SET version_num='e4cb3fa0953e' WHERE alembic_version.version_num = '04deff42e0f0';
+
 COMMIT;
 
