@@ -1,0 +1,48 @@
+{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "SoftwareSourceCode",
+    "license": "https://spdx.org/licenses/Apache-2.0",
+    "name": "cookiecutter-web-backend",
+    "description": "This application is the backend for the service '[cookiecutter-web](https://templates.cloud.ai4eosc.eu/)'\ntemplates for ai4eosc.\n",
+    "applicationCategory": "Software templates",
+    "keywords": [
+        "templates",
+        "cookiecutter",
+        "web service"
+    ],
+    "programmingLanguage": [
+        "Python"
+    ],
+    "relatedLink": [
+        "https://templates.services.fedcloud.eu/"
+    ],
+    "author": [
+        {
+            "@type": "Person",
+            "givenName": "Christophe",
+            "familyName": "Laures",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "KIT"
+            }
+        },
+        {
+            "@type": "Person",
+            "givenName": "Borja",
+            "familyName": "Esteban",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "KIT"
+            }
+        },
+        {
+            "@type": "Person",
+            "givenName": "Valentin",
+            "familyName": "Kozlov",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "KIT"
+            }
+        }
+    ]
+}
