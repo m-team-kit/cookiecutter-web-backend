@@ -3,18 +3,40 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to cookiecutter-web-backend's documentation!
-====================================================
+Modules
+=======
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. autosummary::
+   :toctree: modules
+
+   app
 
 
+.. autosummary::
+   :toctree: modules
 
-Indices and tables
-==================
+   app.authentication
+   app.config
+   app.database
+   app.notifications
+   app.utils
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+.. autosummary::
+   :toctree: modules
+
+   app.api_v1
+   app.api_v1.endpoints
+   app.api_v1.constants
+   app.api_v1.exceptions
+   app.api_v1.parameters
+   app.api_v1.schemas
+
+
+.. autosummary::
+   :toctree: modules
+
+   app.models
+   app.models.template
+   app.models.user
+   
