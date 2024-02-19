@@ -27,6 +27,9 @@ Modules
 
    app.api_v1
    app.api_v1.endpoints
+   app.api_v1.endpoints.database
+   app.api_v1.endpoints.project
+   app.api_v1.endpoints.templates
    app.api_v1.constants
    app.api_v1.exceptions
    app.api_v1.parameters

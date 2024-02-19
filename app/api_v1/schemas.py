@@ -1,3 +1,4 @@
+"""Schema definitions for the API."""
 # pylint: disable=too-few-public-methods,missing-module-docstring,missing-class-docstring,redefined-builtin
 from typing import Annotated, Any, Optional
 from uuid import UUID

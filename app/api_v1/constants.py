@@ -1,3 +1,5 @@
+"""Constants for the API."""
+
 # pylint: disable=too-few-public-methods,missing-module-docstring,missing-class-docstring
 from enum import Enum
 

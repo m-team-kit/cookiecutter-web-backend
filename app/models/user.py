@@ -1,3 +1,5 @@
+"""Models for user related tables."""
+
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 

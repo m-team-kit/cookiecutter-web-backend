@@ -1,0 +1,1 @@
+"""Endopoints initialization module."""

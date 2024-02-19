@@ -1,3 +1,5 @@
+"""Endpoints for creating and updating local database from git repository."""
+
 # pylint: disable=unused-argument,missing-module-docstring
 import json
 import logging

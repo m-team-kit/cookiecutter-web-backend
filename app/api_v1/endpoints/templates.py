@@ -1,3 +1,5 @@
+"""Endpoints to explore and score templates."""
+
 # pylint: disable=unused-argument,missing-module-docstring
 import logging
 from typing import List

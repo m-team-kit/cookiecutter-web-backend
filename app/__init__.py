@@ -1,6 +1,8 @@
-"""Description to be changed later at:
-    - backend/app/__main__.py
+"""Cookiecutter Web Backend for AI4EOSC initializer. This module initializes
+the FastAPI application and mounts the API versions to the main app. Also it
+the root package for the application.
 """
+
 from pathlib import Path
 
 from fastapi import FastAPI

@@ -1,3 +1,4 @@
+"""Parameters for the API endpoints."""
 # pylint: disable=missing-module-docstring
 from fastapi import Query, Path
 

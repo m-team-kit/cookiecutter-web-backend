@@ -1,4 +1,5 @@
 """Models for template related tables."""
+
 # pylint: disable=missing-class-docstring,E1102
 # pylint: disable=missing-function-docstring
 from datetime import datetime
