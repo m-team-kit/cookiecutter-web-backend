@@ -5,6 +5,13 @@ app.api\_v1.schemas
 
    
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      Templates
+      CutterForm
+   
    
 
    

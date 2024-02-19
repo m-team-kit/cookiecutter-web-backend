@@ -1,4 +1,7 @@
-"""Models for template related tables."""
+"""Models for template related tables.
+
+See SQLAlchemy documentation for information on how to work with the models.
+"""
 
 # pylint: disable=missing-class-docstring,E1102
 # pylint: disable=missing-function-docstring
@@ -15,6 +18,8 @@ from app.database import Base, UniqueMixin
 
 
 class Template(Base):
+    """Template model definition."""
+
     id: orm.Mapped[UUID] = orm.mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     created: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime(timezone=True), server_default=sql.func.now(), nullable=False)
     modified: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime(timezone=True), server_default=sql.func.now(), server_onupdate=sql.func.now(), nullable=False)
@@ -32,6 +37,8 @@ class Template(Base):
 
 
 class TagAssociation(Base):
+    """Tag Associations for templates and tags."""
+
     template_id: orm.Mapped[int] = orm.mapped_column(sa.ForeignKey("template.id", ondelete="CASCADE"), primary_key=True)
     tag_id: orm.Mapped[int] = orm.mapped_column(sa.ForeignKey("tag.id", ondelete="CASCADE"), primary_key=True)
     template: orm.Mapped["Template"] = orm.relationship(back_populates="tag_associations")
@@ -47,6 +54,8 @@ class TagAssociation(Base):
 
 
 class Tag(UniqueMixin, Base):
+    """Tag model definition."""
+
     id: orm.Mapped[UUID] = orm.mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     name: orm.Mapped[str] = orm.mapped_column(index=True, unique=True)
 
@@ -60,6 +69,8 @@ class Tag(UniqueMixin, Base):
 
 
 class Score(Base):
+    """Score model definition."""
+
     id: orm.Mapped[UUID] = orm.mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     created: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime(timezone=True), server_default=sql.func.now(), nullable=False)
     modified: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime(timezone=True), server_default=sql.func.now(), server_onupdate=sql.func.now(), nullable=False)
@@ -73,6 +84,7 @@ class Score(Base):
 
 @sa.event.listens_for(orm.Session, "transient_to_pending")
 def validate_tag(session, association):
+    """SQL event to validate the tag association."""
     if isinstance(association, TagAssociation) and association.tag is not None and association.tag.id is None:
         old_type = association.tag  # the id-less Type object that got created
         if old_type in session:  # make sure it's not going to be persisted.
@@ -81,5 +93,6 @@ def validate_tag(session, association):
 
 
 def setup_tag(session, name):
+    """Create a new tag or return the existing one."""
     with session.no_autoflush:
         return Tag.as_unique(session, name=name)
