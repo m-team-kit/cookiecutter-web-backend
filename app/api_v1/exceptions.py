@@ -1,3 +1,4 @@
+"""Exception handlers for the API."""
 # pylint: disable=unused-argument,missing-module-docstring
 import logging
 

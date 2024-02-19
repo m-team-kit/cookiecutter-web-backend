@@ -1,4 +1,5 @@
 """Application module to load configuration."""
+
 # pylint: disable=missing-class-docstring
 from typing import Optional, Union
 
@@ -9,6 +10,10 @@ from starlette.middleware.cors import CORSMiddleware
 
 
 class Settings(BaseSettings, case_sensitive=False):
+    """Application settings from BaseSettings by Pydantic.
+    This class is used to load the configuration from environment variables.
+    """
+
     # pylint: disable=missing-function-docstring
     # pylint: disable=too-few-public-methods,unused-argument
 

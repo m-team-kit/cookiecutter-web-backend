@@ -1,3 +1,8 @@
+"""Models for user related tables.
+
+See SQLAlchemy documentation for information on how to work with the models.
+"""
+
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 
@@ -12,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class User(Base):
+    """User model definition."""
+
     subject: Mapped[str] = mapped_column(primary_key=True, index=True)
     issuer: Mapped[str] = mapped_column(primary_key=True, index=True)
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)

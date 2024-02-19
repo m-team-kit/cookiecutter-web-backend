@@ -1,3 +1,5 @@
+"""Endpoints for the project generation from the cookiecutter template."""
+
 # pylint: disable=unused-argument,missing-module-docstring
 import json
 import logging
