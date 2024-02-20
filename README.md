@@ -24,7 +24,7 @@ Tests are implemented using [pytest](https://docs.pytest.org/en/latest/). The te
 There are multiple ways to run the tests. The standard way is to use `docker compose`:
 
 ```bash
-$ docker compose -f docker-compose.yml -f compose/testing.yml up --rm --exit-code-from backend
+$ docker compose -f docker-compose.yml -f compose/testing.yml run --rm backend
 ```
 
 This will run the tests inside a container with all the required dependencies and services.
