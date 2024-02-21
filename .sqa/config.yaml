@@ -1,0 +1,40 @@
+# .sqa/config.yml - jenkins-pipeline-library configuration file
+
+# generic configuration: workspace, agents
+config:
+  project_repos:
+    cookiecutter-web-backend:
+      repo: "https://codebase.helmholtz.cloud/m-team/ai/cookiecutter-web-backend"
+      branch: main
+      dockerhub: mteamkit/cookiecutter-web-backend
+      dockertag: latest
+
+sqa_criteria:
+  qc_style:
+    repos:
+      cookiecutter-web-backend:
+        container: backend
+        tox:
+          testenv:
+            - qc.sty
+  qc_coverage:
+    repos:
+      cookiecutter-web-backend:
+        container: backend
+        tox:
+          testenv:
+            - qc.cov
+  qc_security:
+    repos:
+      cookiecutter-web-backend:
+        container: backend
+        tox:
+          testenv:
+            - qc.sec
+
+environment:
+  GIT_COMMITTER_NAME: BorjaEst 
+  GIT_COMMITTER_EMAIL: borja.sanchis@kit.edu
+  LANG: C.UTF-8
+
+timeout: 600

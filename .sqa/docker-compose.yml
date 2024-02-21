@@ -1,0 +1,36 @@
+version: "3.6"
+
+services:
+  backend:
+    image: "backend:testing"
+    container_name: backend
+    hostname: backend
+    depends_on:
+      database:
+        condition: service_healthy
+      smtp_server:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: dockerfile
+
+    environment:
+      - DEBUG=1
+      - GIT_COMMITTER_NAME=${GIT_COMMITTER_NAME}
+      - GIT_COMMITTER_EMAIL=${GIT_COMMITTER_EMAIL}
+      - LANG=${LANG}
+
+  database:
+    image: postgres:15
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  smtp_server:
+    image: boky/postfix:v3.6.1-alpine
+    environment:
+      ALLOWED_SENDER_DOMAINS: templates.cloud.ai4eosc.eu
