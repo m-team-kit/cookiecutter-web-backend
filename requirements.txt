@@ -1,3 +1,4 @@
+# Required from system server
 alembic ~= 1.11.2
 uvicorn ~= 0.23.2
 fastapi ~= 0.103.0
@@ -12,3 +13,6 @@ gitpython ~= 3.1.32
 cookiecutter ~= 2.3.0
 httpx ~= 0.24.1
 tox ~= 4.11.0
+
+# Required from common cookies
+dvc ~= 2.6.3
