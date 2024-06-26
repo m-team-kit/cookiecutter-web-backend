@@ -15,11 +15,10 @@ services:
 
   database:
     image: postgres:latest
-    env_file: [.env]
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-some_password}
       POSTGRES_USER: ${POSTGRES_USER:-db_user}
-      POSTGRES_DB: ${POSTGRES_DB:-db_name}
+      POSTGRES_DB: ${POSTGRES_DB:-application}
     volumes:
       - ./scripts/setup_migration.sql:/docker-entrypoint-initdb.d/0-setup_migration.sql
       - ./scripts/setup_sandbox.sql:/docker-entrypoint-initdb.d/1-setup_sandbox.sql
