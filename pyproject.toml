@@ -14,3 +14,11 @@ line-length = 200
 [tool.pytest.ini_options]
 pythonpath = ["."]
 addopts = "--import-mode=importlib"
+
+[tool.pytest_env]
+PROJECT_NAME = "test-fastapi"
+REPOSITORY_URL = "https://some-repo.git"
+TRUSTED_OP_LIST = '["https://aai-dev.egi.eu/auth/realms/egi"]'
+ADMIN_SECRET = "6de44315b565ea73f778282d"
+SMTP_HOST = "smtp_server"
+SMTP_PORT = "587"

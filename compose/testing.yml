@@ -5,6 +5,8 @@ services:
     build:
       tags: [backend:testing]
       target: testing
+    environment:
+      POSTGRES_HOST: database
 
   database:
     restart: "no"
@@ -15,6 +17,9 @@ services:
       POSTGRES_PASSWORD: db_password
       POSTGRES_USER: db_user
       POSTGRES_DB: db_name
+      POSTGRES_PORT: 5432
+    ports:
+      - "5432:5432"
 
   smtp_server:
     restart: "no"
