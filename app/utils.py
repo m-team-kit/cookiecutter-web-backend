@@ -1,4 +1,5 @@
 """Utility functions for the app."""
+
 import logging
 import tempfile
 from typing import Generator
@@ -49,9 +50,11 @@ def parse_field(name, value, prompt=None) -> dict:
     if isinstance(value, list):
         data = {"type": "select", "name": name, "default": value[0]}
         data["options"] = [{"name": v} for v in value]
-        data["prompt"] = prompt.get("__prompt__", None) if prompt else None
-        for option in data["options"]:
-            option["prompt"] = prompt.get(option["name"], None) if prompt else None
+        data["prompt"] = prompt
+        if isinstance(prompt, dict):
+            data["prompt"] = prompt.get("__prompt__", None)
+            for option in data["options"]:
+                option["prompt"] = prompt.get(option["name"], None)
         return data
     raise NotImplementedError(f"Field type '{type(value)}' not supported.")
 

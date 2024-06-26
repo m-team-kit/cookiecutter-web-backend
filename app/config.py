@@ -31,9 +31,7 @@ class Settings(BaseSettings, case_sensitive=False):
     def assemble_cors_origins(cls, value: Union[str, list[str]]) -> Union[list[str], str]:
         if isinstance(value, str) and not value.startswith("["):
             return [i.strip() for i in value.split(",")]
-        if isinstance(value, (list, str)):
-            return value
-        raise ValueError(value)
+        return value
 
     # List of trusted OpenID Connect providers
     trusted_op: set[HttpUrl] = set(["https://aai.egi.eu/auth/realms/egi"])
@@ -48,10 +46,10 @@ class Settings(BaseSettings, case_sensitive=False):
             raise ValueError(value, "secret must be at least 12 characters long")
         return value
 
-    postgres_host: str
+    postgres_host: str = "localhost"
+    postgres_db: str = "application"
     postgres_user: str
     postgres_password: str
-    postgres_db: str = "application"
     postgres_port: int = 5432
 
     @property

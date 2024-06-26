@@ -1,10 +1,10 @@
 """Defines fixtures available to all tests.
 See: https://fastapi.tiangolo.com/tutorial/testing/
 """
+
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 import os
-import tomllib
 from unittest.mock import Mock, patch
 
 import flaat
@@ -18,25 +18,13 @@ from app import create_app, database
 # -----------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="session", params=["simple", "notifications", "no-cors"])
-def configuration_path(request):
-    """Fixture to provide each testing configuration path."""
-    return f"tests/configurations/{request.param}.toml"
-
-
-@pytest.fixture(scope="session", name="config")
-def configuration(configuration_path):
-    """Fixture to provide each testing configuration dict."""
-    with open(configuration_path, mode="rb") as file:
-        return tomllib.load(file)
-
-
 @pytest.fixture(scope="session", autouse=True)
-def environment(config):
-    """Patch fixture to set test env variables if not defined."""
-    for key, value in config["ENVIRONMENT"].items():
-        if key not in os.environ:
-            os.environ[key] = value
+def configuration():
+    """Fixture to provide each testing configuration dict."""
+    os.environ["POSTGRES_PASSWORD"] = "db_password"
+    os.environ["POSTGRES_USER"] = "db_user"
+    os.environ["POSTGRES_DB"] = "db_name"
+    os.environ["POSTGRES_PORT"] = "5432"
 
 
 # Database fixtures -----------------------------------------------------------
@@ -44,7 +32,7 @@ def environment(config):
 
 
 @pytest.fixture(scope="module")
-def sql_session(client, environment):
+def sql_session(client):
     """Returns the database session used in the test client methods."""
     engine = client.app.state.sql_engine  # Use same engine as application
     engine = engine.execution_options(isolation_level="SERIALIZABLE")
