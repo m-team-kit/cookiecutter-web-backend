@@ -1,14 +1,12 @@
 {
-    "text_field": "My text field",
     "composed_var": "{{ cookiecutter.text_field|lower|replace(' ', '_') }}",
-    "complex_var": {
-        "key_1": {
-            "name": "Name 1",
-            "value": "value 2"
-        },
-        "key_2": {
-            "name": "Name 2",
-            "value": "value 2"
+    "select_field": [ "option_1", "option_2", "option_3" ],
+    "__prompts__": {
+        "composed_var": "Composed variable example:",
+        "select_field": {
+            "__prompt__": "Select field example:",
+            "option_1": "Option 1 example",
+            "option_2": "Option 2 example"
         }
     }
 }

@@ -9,10 +9,6 @@
         "text_field": "Text field example:",
         "composed_var": "Composed variable example:",
         "checkbox_field": "Checkbox field example:",
-        "select_field": {
-            "__prompt__": "Select field example:",
-            "option_1": "Option 1 example",
-            "option_2": "Option 2 example"
-        }
+        "select_field": "Select prompt as string"
     }
 }

@@ -1,1 +1,2 @@
-complex_var = "{{ cookiecutter.complex_var }}"
+composed_var = "{{ cookiecutter.composed_var }}"
+select_field = "{{ cookiecutter.select_field }}"

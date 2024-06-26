@@ -1,4 +1,5 @@
 """Tests for the fetch_fields endpoint."""
+
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 import pytest
@@ -60,10 +61,25 @@ def test_200_checkbox_field(response):
 
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
-def test_200_select_field(response):
+def test_200_select_field_str(response):
     """Tests the response status code is 200 and valid."""
     assert response.status_code == 200
     field = response.json()[3]
+    assert field["type"] == "select"
+    assert field["name"] == "select_field"
+    assert field["options"][0] == {"name": "option_1", "prompt": None}
+    assert field["options"][1] == {"name": "option_2", "prompt": None}
+    assert field["options"][2] == {"name": "option_3", "prompt": None}
+    assert field["prompt"] == "Select prompt as string"
+    assert field["default"] == "option_1"
+
+
+@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_2"], indirect=True)
+@pytest.mark.parametrize("template_uuid", ["uuid_4"], indirect=True)
+def test_200_select_field_dict(response):
+    """Tests the response status code is 200 and valid."""
+    assert response.status_code == 200
+    field = response.json()[1]
     assert field["type"] == "select"
     assert field["name"] == "select_field"
     assert field["options"][0] == {"name": "option_1", "prompt": "Option 1 example"}
@@ -123,7 +139,7 @@ def test_500_database_error(response):
     assert message["detail"][0]["msg"] == "Internal Server Error"
 
 
-@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_2"], indirect=True)
+@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_3"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_3"], indirect=True)
 def test_501_not_implemented(response):
     """Tests the response status code is 501 and valid.""" ""
