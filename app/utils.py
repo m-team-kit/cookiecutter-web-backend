@@ -1,7 +1,9 @@
 """Utility functions for the app."""
 
+import json
 import logging
 import tempfile
+import urllib
 from typing import Generator
 
 logger = logging.getLogger(__name__)
@@ -96,3 +98,26 @@ def unique(session, cls, hashfunc, queryfunc, args, kwds):
                 session.add(obj)
         session.unique_cache[key] = obj
         return obj
+
+
+def fetch_arguments(template):
+    """Fetch cookiecutter.json from template object."""
+    logger.debug("Fetching cookiecutter.json file.")
+    url = f"{template.gitLink}/raw/{template.gitCheckout}/cookiecutter.json"
+    if url.lower().startswith("http"):
+        req = urllib.request.Request(url)
+    else:
+        raise ValueError(f"Bad url in '{template}'.") from None
+
+    logger.debug("Load and parse request into json, %s.", req)
+    with urllib.request.urlopen(req) as response:  # nosec (validated above)
+        return json.load(response)
+
+
+def str2bool(string):
+    """Convert string to boolean."""
+    if string.lower() in ("yes", "true", "t", "1"):
+        return True
+    if string.lower() in ("no", "false", "f", "0"):
+        return False
+    raise ValueError(f"Invalid boolean value '{string}'.")
