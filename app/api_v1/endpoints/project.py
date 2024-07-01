@@ -1,11 +1,9 @@
 """Endpoints for the project generation from the cookiecutter template."""
 
 # pylint: disable=unused-argument,missing-module-docstring
-import json
 import logging
 import shutil
 import tempfile
-import urllib.request
 from uuid import UUID
 
 from cookiecutter.main import cookiecutter
@@ -70,15 +68,7 @@ async def fetch_fields(
         raise NoResultFound("Template not found")
 
     logger.debug("Fetching cookiecutter.json file.")
-    url = f"{template.gitLink}/raw/{template.gitCheckout}/cookiecutter.json"
-    if url.lower().startswith("http"):
-        req = urllib.request.Request(url)
-    else:
-        raise ValueError(f"Bad url in '{template}'.") from None
-
-    logger.debug("Load and parse request into json, %s.", req)
-    with urllib.request.urlopen(req) as response:  # nosec (validated above)
-        data = json.load(response)
+    data = utils.fetch_arguments(template)
 
     logger.debug("Returning CutterForm dict from json")
     return utils.parse_fields(data)
@@ -133,6 +123,12 @@ async def generate_project(
     logger.debug("Checking if template exists.")
     if not template:
         raise NoResultFound("Template not found")
+
+    logger.debug("Parse boolean fields into cookiecutter format.")
+    data = utils.fetch_arguments(template)
+    bool_fields = [k for k, v in data.items() if isinstance(v, bool)]
+    for key in filter(lambda k: k in options_in, bool_fields):
+        options_in[key] = utils.str2bool(options_in[key])
 
     logger.debug("Generating project into memory zip.")
     cookiecutter(

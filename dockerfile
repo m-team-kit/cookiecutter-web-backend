@@ -1,5 +1,5 @@
 # ================================== BUILDER ===================================
-ARG  PYTHON_VERSION=3.11
+ARG PYTHON_VERSION=3.11
 FROM python:${PYTHON_VERSION} as builder
 
 # Environments to reduce size of docker image
@@ -10,6 +10,8 @@ ENV PYTHONHASHSEED=random
 ENV PIP_NO_CACHE_DIR=true
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on
 ENV PIP_DEFAULT_TIMEOUT=100
+ARG GIT_USERNAME
+ARG GIT_EMAIL
 
 # Install system updates and tools
 RUN apt-get update 
@@ -23,8 +25,14 @@ RUN python -m pip install --upgrade pip
 RUN useradd -m sid
 RUN chown -R sid:sid /app
 
+# Generate .gitconfig from envritonment variables
+USER sid
+RUN git config --global user.name ${GIT_USERNAME}
+RUN git config --global user.email ${GIT_EMAIL}
+
 # ================================= PRODUCTION =================================
 FROM builder AS production
+USER root
 
 RUN python -m pip install -r requirements.txt
 

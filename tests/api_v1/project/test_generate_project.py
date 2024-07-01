@@ -15,6 +15,7 @@ def response(client, patch_session, template_uuid, headers, body):
     return response
 
 
+@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("patch_cookiecutter", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
@@ -37,6 +38,26 @@ def test_200_ok(response, body):
     assert config["select_field"] == "option_1"
     assert config["no_prompt_var"] == "Some text"
     assert config["private_var"] == "This variable will not be rendered"
+
+
+@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
+@pytest.mark.parametrize("patch_cookiecutter", ["cookiecutter_1"], indirect=True)
+@pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
+@pytest.mark.parametrize("body", [{"text_field": "Some text", "checkbox_field": "false"}], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_200_no_checkbox(response, body):
+    """Tests the response status code is 200 and valid."""
+    # Assert response is valid
+    assert response.status_code == 200
+    # Assert header is valid
+    assert response.headers["content-type"] == "application/zip"
+    # Assert template in response is valid
+    sub_folder = f"{body['text_field'].lower().replace(' ', '_')}_project"
+    zip_buffer = io.BytesIO(response.content)
+    with zipfile.ZipFile(zip_buffer, "r", zipfile.ZIP_DEFLATED, False) as archive:
+        with archive.open(f"{sub_folder}/template_file.toml") as file:
+            config = tomllib.load(file)
+    assert not "checkbox_field" in config
 
 
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
@@ -110,6 +131,7 @@ def test_422_unsafe_characters(response):
     assert "contains unsafe characters" in message["detail"][0]["msg"]
 
 
+@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("patch_cookiecutter", ["repository_down"], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
@@ -125,6 +147,7 @@ def test_500_repository_down(response):
     assert message["detail"][0]["msg"] == "Internal Server Error"
 
 
+@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
 @pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
