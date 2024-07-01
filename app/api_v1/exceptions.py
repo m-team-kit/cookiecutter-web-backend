@@ -1,10 +1,12 @@
 """Exception handlers for the API."""
+
 # pylint: disable=unused-argument,missing-module-docstring
 import logging
 
 from fastapi import FastAPI, HTTPException, Request, status
 from flaat.exceptions import FlaatForbidden, FlaatUnauthenticated
 from sqlalchemy.orm.exc import NoResultFound
+from cookiecutter.exceptions import CookiecutterException
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,13 @@ async def server_error(request: Request, exc: Exception):
     """Handle server error exceptions (default exceptions)."""
     if isinstance(exc, HTTPException):  # Catch only not defined exceptions
         raise exc
+    if isinstance(exc, CookiecutterException):  # Catch only CookiecutterExceptions
+        logger.error("Cookiecutter error: %s", exc)
+        info = {"type": "cookiecutter_error", "loc": ["cookiecutter.json"], "msg": exc.args[0]}
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[info],
+        )
     logger.error("Server error: %s", exc)
     info = {"type": "server_error", "loc": ["server"], "msg": "Internal Server Error"}
     raise HTTPException(
