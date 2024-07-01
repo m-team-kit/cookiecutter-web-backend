@@ -9,6 +9,9 @@ services:
     build:
       context: .
       dockerfile: dockerfile
+      args:
+        GIT_USERNAME: ${PROJECT_NAME?Undefined PROJECT_NAME for git config}
+        GIT_EMAIL: ${BACKEND_GIT_EMAIL?Undefined BACKEND_GIT_EMAIL for git config}
 
   database:
     image: postgres:15
