@@ -17,7 +17,10 @@ See [Use Compose in production](https://docs.docker.com/compose/production/) for
 
 This will run the application following the configuration in `compose.yml` and `production.yml` files. It automatically loads the environment variables from the `.env` file and creates a postgres database.
 
-> After the backend is running for first time, the database is empty. You need to call the API method `POST /database:create` to trigger the reading of the repository containing the templates index.
+> After the backend is running for first time, the database is empty.
+> You need to call the API method `POST /database:create` as admin
+> (env ADMIN_SECRET) to trigger the reading of the repository containing the
+> templates index.
 
 ## Testing
 
