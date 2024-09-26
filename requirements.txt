@@ -10,7 +10,7 @@ sqlalchemy ~= 2.0.19
 pydantic-settings ~= 2.0.2
 flaat ~= 1.1.14
 gitpython ~= 3.1.32
-cookiecutter ~= 2.3.0
+cookiecutter @ git+https://github.com/vykozlov/cookiecutter.git@feat/failedhookexception_with_hook_error
 httpx ~= 0.24.1
 tox ~= 4.11.0
 
