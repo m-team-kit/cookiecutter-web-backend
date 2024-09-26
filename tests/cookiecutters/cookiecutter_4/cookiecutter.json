@@ -1,0 +1,14 @@
+{
+    "text_field": "My text field",
+    "composed_var": "{{ cookiecutter.text_field|lower|replace(' ', '_') }}",
+    "complex_var": {
+        "key_1": {
+            "name": "Name 1",
+            "value": "value 2"
+        },
+        "key_2": {
+            "name": "Name 2",
+            "value": "value 2"
+        }
+    }
+}

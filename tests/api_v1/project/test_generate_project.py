@@ -147,6 +147,22 @@ def test_422_repository_down(response):
     assert "repository_down" in message["detail"][0]["msg"]
 
 
+@pytest.mark.parametrize("patch_fields_url", ["cookiecutter_4"], indirect=True)
+@pytest.mark.parametrize("patch_cookiecutter", ["cookiecutter_4"], indirect=True)
+@pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
+@pytest.mark.parametrize("body", [{"text_field": "Some text"}], indirect=True)
+@pytest.mark.parametrize("authorization_bearer", ["user_1-token"], indirect=True)
+def test_422_hook_failed(response):
+    """Tests the response status code is 422 and valid.""" ""
+    # Assert response is valid
+    assert response.status_code == 422
+    # Assert message is valid
+    message = response.json()
+    assert message["detail"][0]["type"] == "cookiecutter_error"
+    assert message["detail"][0]["loc"] == ["cookiecutter.json"]
+    assert "Hook fail message" in message["detail"][0]["msg"]
+
+
 @pytest.mark.parametrize("patch_fields_url", ["cookiecutter_1"], indirect=True)
 @pytest.mark.parametrize("patch_session", [Exception("error")], indirect=True)
 @pytest.mark.parametrize("template_uuid", ["uuid_1"], indirect=True)
